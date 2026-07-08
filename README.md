@@ -22,5 +22,8 @@ To prevent command syntax errors due to constant FFmpeg build updates, **do not 
 * Download our **v1.0.0 Stable Build** zip file.
 
 ---
+## FSRIFS - chatbot Assistant
+[💬 Clique aqui para conversar com o nosso Assistente de Suporte IA se tiver dúvidas ou erros!](https://fsrifs-assistant.zapier.app)
+
 **Official Project Channel:** Watch tutorials and performance showcases on:
 [YouTube (@toplayaless)] https://www.youtube.com/playlist?list=PLae7RZ7VAOWk
