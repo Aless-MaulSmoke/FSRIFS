@@ -20,7 +20,6 @@ Inside the `docs` folder, you will find the **Practical User Manual** containing
 To prevent command syntax errors due to constant FFmpeg build updates, **do not use generic FFmpeg versions**. 
 * Go to the **Releases** section on the right side of this repository.
 * Download our **v1.0.0 Stable Build** zip file.
-* Extract the `ffmpeg.exe` file directly into the root folder of this project.
 
 ---
 **Official Project Channel:** Watch tutorials and performance showcases on [YouTube (@toplayaless)](https://youtube.com)
