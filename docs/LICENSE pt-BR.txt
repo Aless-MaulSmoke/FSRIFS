@@ -1,4 +1,4 @@
-ffmpeg_fsrifs v0.007
+FSRIFS v1.0.0 by Aless(MaulSmoke)
 
 ================================================================================
                     CRÉDITOS E ATRIBUIÇÕES DE LICENÇA
