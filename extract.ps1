@@ -11,7 +11,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ==========================================================================
 # SETUP PATHS & DIRECTORIES
 # ==========================================================================
-# Garante caminhos absolutos dinâmicos baseados na localização atual do script
+# Ensures dynamic absolute paths based on the script's current location
 $ffmpegPath  = Join-Path $PSScriptRoot "ffmpeg\bin\ffmpeg.exe"
 $ffprobePath = Join-Path $PSScriptRoot "ffmpeg\bin\ffprobe.exe"
 
@@ -21,14 +21,14 @@ if ([string]::IsNullOrEmpty($output)) {
     $outputDir = $output
 }
 
-# Garante que a pasta de destino exista
+# Make sure the destination folder exists
 New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 
 # ==========================================================================
 # SETUP VALIDATIONS (ANINHADO & BLINDADO)
 # ==========================================================================
 
-# 1. Validação do Arquivo de Entrada e Dependências
+# 1. Validation of Input File and Dependencies
 if (-not $file) {
     Write-Warning "No file information. Use the '-file' parameter to specify the video."
     exit
@@ -47,7 +47,7 @@ if (-not $file) {
     }
 }
 
-# 3. Validação de Tempo e Duração via FFprobe
+# 3. Time and Duration Validation via FFprobe
 try {
     $videoDurationSecs = & $ffprobePath -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $file
     $videoDurationSecs = [double]$videoDurationSecs
