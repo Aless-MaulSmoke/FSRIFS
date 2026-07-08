@@ -2,7 +2,6 @@
 // INTERSECTION FLUID SHARPEN (IFS) v0.1 & AMD FidelityFX FSR 1.0 PIPELINE
 // =========================================================================
 // IFS Algorithm Developed by: Aless(MaulSmoke)
-// Copyright (c) 2026 Aless(MaulSmoke) - All rights reserved.
 //
 // AMD FidelityFX FSR Copyright (c) 2021 Advanced Micro Devices, Inc.
 //
