@@ -1,4 +1,4 @@
-# FSRIFS: Video Upscale & Frame Generator for Weak PCs
+# FSRIFS (FSR+IFS): Video Upscale & Frame Generator for Weak PCs
 
 An ultra-lightweight video post-processing pipeline tailored for legacy hardware, combining open-source tools with pure mathematical logic executed directly on the GPU silicon via Vulkan.
 
@@ -6,6 +6,14 @@ An ultra-lightweight video post-processing pipeline tailored for legacy hardware
 Validated and optimized under severe hardware limitations:
 * **CPU:** Tested on AMD FX-6300 (2012 architecture) with only ~45% usage.
 * **GPU:** Tested on AMD Radeon RX 550 4GB (Works on any 2GB+ VRAM card with native Vulkan support).
+
+### How it Works (Under the Hood)
+Although there are 4 distinct technologies involved, they are all merged into a single process that you can easily execute via a simple PowerShell command. This applies the exact same concept to your pre-recorded videos that Lossless Scaling applies to games in real time.
+
+* **FFmpeg:** The main engine used to handle and generate the video files.
+* **Vulkan:** The core dependency. If your video card supports this technology, you're good to go.
+* **AMD FidelityFX (FSR):** A lightweight shader that runs directly on your GPU, handling the upscaling process with pure mathematics and zero AI bloat.
+* **IFS (Intersection Fluid Sharpen):** My own custom-built shader designed to generate fluid frames super fast without AI, using minimal GPU processing. The concept behind this shader is inspired by vector manipulation programs during object intersection processes.
 
 ## How It Works
 The project uses a custom PowerShell pipeline that integrates **FFmpeg**, **libplacebo**, **AMD FidelityFX FSR 1.0** (spatial upscale), and the **IFS (Intersection Fluid Sharpen)** temporal shader authored by Aless (MaulSmoke) to generate frames without relying on heavy AI or Tensor Cores.
