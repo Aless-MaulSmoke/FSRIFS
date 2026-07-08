@@ -34,7 +34,7 @@ $hOriginal = [int]$video.height
 # SETUP VALIDATIONS
 # ==========================================================================
 
-# Validação estruturada do arquivo de entrada
+# Structured validation of the input file
 if (-not $file) {
     Write-Warning "No file information. Use the '-file' parameter to process the video."
     exit
@@ -79,14 +79,14 @@ if ($scale) {
         $hTarget = [int]$Matches[2]
     }
     else {
-        # Formato 2: Multiplicador tradicional ex: "2" ou "1.5"
-        # Substitui vírgula por ponto caso digitado no padrão PT-BR
+        # Format 2: Traditional multiplier, e.g., "2" or "1.5"
+        # Replaces comma with period if entered in the PT-BR format
         $numScale = [double]($scaleClean.Replace(",", "."))
         $wTarget = $wOriginal * $numScale
         $hTarget = $hOriginal * $numScale
     }
 
-    # Força teto par superior para corrigir inconsistências do OBS ou do cálculo proporcional
+    # Force upper ceiling to correct inconsistencies from OBS or proportional calculation
     $widthOut  = [int]([math]::Ceiling($wTarget / 2) * 2)
     $heightOut = [int]([math]::Ceiling($hTarget / 2) * 2)
 } else {
