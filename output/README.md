@@ -1,3 +1,4 @@
+# extract.ps1 script request
 
-==============================================
-the extracted frames are stored in this folder
+The extracted frames are stored in this folder if you don't choose an output folder.
+
