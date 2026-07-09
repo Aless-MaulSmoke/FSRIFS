@@ -1,4 +1,4 @@
-# FSRIFS (FSR+IFS): Video Upscale & Frame Interpolation for Weak PCs
+# FSRIFS (FSR+IFS): Video Upscale & Frame Generator for Weak PCs
 
 An ultra-lightweight video post-processing pipeline tailored for legacy hardware, combining open-source tools with pure mathematical logic executed directly on the GPU silicon via Vulkan.
 
