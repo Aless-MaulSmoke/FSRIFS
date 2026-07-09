@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title PIPELINE FSR + IFS - by Aless(MaulSmoke)
 cd /d "%~dp0"
 
@@ -44,7 +45,14 @@ echo Verbose Mode : %VERBOSE%
 echo =======================================================
 echo.
 
-powershell -ExecutionPolicy Bypass -Command ".\process.ps1 -file '%~1' -scale '%SCALE%' -sharpness %SHARPNESS% -fps %FPS% -quality %QUALITY% %V_PARAM%"
+:: Save the path with quotes in a Windows environment variable
+set "MY_INPUT_FILE=%~1"
+
+:: Runs PowerShell fetching the path directly from memory via $env:
+powershell -ExecutionPolicy Bypass -Command ".\process.ps1 -file $env:MY_INPUT_FILE -scale '%SCALE%' -sharpness %SHARPNESS% -fps %FPS% -quality %QUALITY% %V_PARAM%"
+
+:: Clears the temporary variable
+set "MY_INPUT_FILE="
 
 echo.
 echo =======================================================

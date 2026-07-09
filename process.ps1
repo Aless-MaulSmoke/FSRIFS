@@ -26,15 +26,26 @@ $shaderFFmpeg = $shader.Replace("\", "/").Replace(":", "\:")
 $probeJson = & $ffprobe -v quiet -print_format json -show_streams -show_format "$file" | ConvertFrom-Json
 $video     = $probeJson.streams | Where-Object { $_.codec_type -eq "video" } | Select-Object -First 1
 
-# Extract structural integers to prevent string truncation during syntax parsing
+# extrack width and height of original video
 $wOriginal = [int]$video.width
 $hOriginal = [int]$video.height
+# extrack fps of original video
+if ($video.avg_frame_rate -match "/") {
+    $partesFps = $video.avg_frame_rate -split "/"
+    if ([double]$partesFps[1] -gt 0) {
+        $fpsOriginal = [int][math]::Round([double]$partesFps[0] / [double]$partesFps[1])
+    } else {
+        $fpsOriginal = 0
+    }
+} else {
+    $fpsOriginal = [int][math]::Round([double]$video.avg_frame_rate)
+}
 
 # ==========================================================================
 # SETUP VALIDATIONS
 # ==========================================================================
 
-# Structured validation of the input file
+# validation: file
 if (-not $file) {
     Write-Warning "No file information. Use the '-file' parameter to process the video."
     exit
@@ -51,16 +62,40 @@ if (-not $file) {
         exit
     }
 }
-if (-not $scale -and -not $fps) {
-    Write-Warning "No modifications requested. Use the '-scale' and/or '-fps' parameters to process the video."
+# prepare validation: scale
+$isScaleSame = $false
+if ($scale) {
+    $scaleClean = $scale.Replace(" ", "").ToUpper()
+    if ($scaleClean -match "(\d+)X(\d+)") {
+        # Força ambos os lados a serem inteiros puros para evitar erros de texto
+        if ([int]$Matches[1] -eq [int]$wOriginal -and [int]$Matches[2] -eq [int]$hOriginal) { 
+            $isScaleSame = $true 
+        }
+    } elseif ([double]($scaleClean.Replace(",", ".")) -eq 1.0) {
+        $isScaleSame = $true
+    }
+}
+# prepare validation: fps
+$isFpsSame = $false
+if ($PSBoundParameters.ContainsKey('fps') -and [int]$fps -eq [int]$fpsOriginal) {
+    $isFpsSame = $true
+}
+#  validation: scale and fps
+if ( (-not $scale -and -not $fps) -or 
+     ($isScaleSame -and $isFpsSame) -or 
+     ($isScaleSame -and -not $fps) -or 
+     ($isFpsSame -and -not $scale) ) {
+    Write-Warning "No modifications requested. The video already matches the specified resolution and/or FPS."
     exit
 }
+#  validation: qualityfps
 if ($quality -notin @("LOW", "MED", "BIG")) {
     Write-Warning "quality needs only one of the valid options: low | med | big"
     exit
 }
-if (-not $scale -and $PSBoundParameters.ContainsKey('sharpness')) {
-    Write-Warning "The '-sharpness' parameter can only be used when spatial upscaling ('-scale') is active."
+#  validation: sharpness
+if ($PSBoundParameters.ContainsKey('sharpness') -and (-not $scale -or $isScaleSame)) {
+    Write-Warning "The '-sharpness' parameter can only be used when spatial upscaling ('-scale') is active and changing the resolution."
     exit
 }
 
@@ -69,7 +104,7 @@ if (-not $scale -and $PSBoundParameters.ContainsKey('sharpness')) {
 # ==========================================================================
 
 # Setup scale: resolution based on scale multiplier value mapping
-if ($scale) {
+if ($scale -and -not $isScaleSame) {
     # Padroniza a string removendo espaços e jogando para maiúsculo
     $scaleClean = $scale.Replace(" ", "").ToUpper()
 
@@ -92,6 +127,13 @@ if ($scale) {
 } else {
     $widthOut  = $wOriginal
     $heightOut = $hOriginal
+	$scale     = $null
+}
+
+# Setup fps (Intercepts if the requested FPS matches the video's original FPS)
+if ($isFpsSame) {
+    $null = $PSBoundParameters.Remove('fps')
+    $fps = $null
 }
 
 # Setup quality: Retrieves values ​​based on the user's choice.
@@ -112,28 +154,34 @@ if ($v) {
 }
 
 # Set up sharpness: (Direct and robust string replacement): 0.0 (maximum) to 2.0 (minimum)
-if (-not $sharpness) {
-    $sharpness = 5
-}
-$clampedUserSharpness = [math]::Max(0, [math]::Min(10, $sharpness)) / 10.0
-$fsrSharpness = 2.0 * (1.0 - $clampedUserSharpness)
-if (Test-Path $shader) {
-    # Reads the file as an array of independent lines
-    $linhasShader = Get-Content $shader
- 	# Injects the new line formatted with an invariant decimal point
-	$novaLinhaSharpness = "#define SHARPNESS $($fsrSharpness.ToString('0.0', [System.Globalization.CultureInfo]::InvariantCulture))"
-    # Finds any line starting with '#define SHARPNESS' and replaces it entirely
-    for ($i = 0; $i -lt $linhasShader.Count; $i++) {
-        if ($linhasShader[$i] -like "#define SHARPNESS*") {
-            $linhasShader[$i] = $novaLinhaSharpness
-            break # Found and modified; the loop can stop.
-        }
+if ($scale -and -not $isScaleSame) {
+    if (-not $sharpness) {
+        $sharpness = 5
     }
-    # Saves the array back to the file while maintaining clean encoding
-    Set-Content $shader -Value $linhasShader -Encoding UTF8
-	# Replaces backslashes with forward slashes (format accepted by libplacebo)
-	$shaderFFmpeg = $shader.Replace("\", "/").Replace(":", "\:")
+    $clampedUserSharpness = [math]::Max(0, [math]::Min(10, $sharpness)) / 10.0
+    $fsrSharpness = 2.0 * (1.0 - $clampedUserSharpness)
+    if (Test-Path $shader) {
+        # Reads the file as an array of independent lines
+        $linhasShader = Get-Content $shader
+        # Injects the new line formatted with an invariant decimal point
+        $novaLinhaSharpness = "#define SHARPNESS $($fsrSharpness.ToString('0.0', [System.Globalization.CultureInfo]::InvariantCulture))"
+        # Finds any line starting with '#define SHARPNESS' and replaces it entirely
+        for ($i = 0; $i -lt $linhasShader.Count; $i++) {
+            if ($linhasShader[$i] -like "#define SHARPNESS*") {
+                $linhasShader[$i] = $novaLinhaSharpness
+                break # Found and modified; the loop can stop.
+            }
+        }
+        # Saves the array back to the file while maintaining clean encoding
+        Set-Content $shader -Value $linhasShader -Encoding UTF8
+    }
+} else {
+    # Se a escala for inexistente ou igual, o sharpness é totalmente anulado
+    $sharpness = $null
 }
+
+# Mantém a conversão do caminho do shader para o libplacebo sempre ativa e segura
+$shaderFFmpeg = $shader.Replace("\", "/").Replace(":", "\:")
 
 # ==========================================================================
 # FILTER PIPELINE ASSEMBLY CONFIGURATION - THREE ISOLATED LOGICAL STATES
@@ -162,7 +210,7 @@ elseif ($fps -and -not $scale) {
 }
 
 # add sharness information 
-if ($sharpness -ne 5) {
+if ($null -ne $sharpness -and $sharpness -ne 0 -and $sharpness -ne 5) {
 	$sufixo += "_SHARPNESS_$sharpness"
 }
 
