@@ -32,15 +32,16 @@ and enable synchronous shader injection into the video pipeline.
 --------------------------------------------------------------------------------
 * Version Used: FSR v1.0.2
 * Developed by: AMD (Advanced Micro Devices, Inc.)
-* Applicable License: MIT License (Open-Source, permissive). * Details: Technology integrated into the shader's logic block for reconstructing
+* Applicable License: MIT License (Open-Source, permissive). 
+* Details: Technology integrated into the shader's logic block for reconstructing
 physical edges and high-fidelity upscaling without the use of AI.
 
 --------------------------------------------------------------------------------
 4. TEMPORAL CONTROL ALGORITHM: INTERSECTION FLUID SHARPEN (IFS)
 --------------------------------------------------------------------------------
-* Version Used: IFS v0.1
+* Version Used: IFS v1.0
 * Developed by: Aless (MaulSmole)
-* Copyright: Copyright (c) 2026 - All rights reserved by the creator.
+* Applicable License: MIT License (Open-Source, permissive). 
 * Details: Proprietary custom shader responsible for creating the dynamic
 motion mask and structural shielding for static elements (HUD/Fonts).
 

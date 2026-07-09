@@ -39,9 +39,9 @@ Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
 --------------------------------------------------------------------------------
 4. ALGORITMO DE CONTROLE TEMPORAL: INTERSECTION FLUID SHARPEN (IFS)
 --------------------------------------------------------------------------------
-* Versão Utilizada: IFS v0.1
+* Versão Utilizada: IFS v1.0
 * Desenvolvido por: Aless (MaulSmole)
-* Direitos Autorais: Copyright (c) 2026 - Todos os direitos reservados ao criador.
+* Licença Aplicável: Licença MIT (Open-Source, permissiva).
 * Detalhes: Shader customizado proprietário responsável pela criação da máscara 
   dinâmica de movimento e blindagem estrutural de elementos estáticos (HUD/Fontes).
 
