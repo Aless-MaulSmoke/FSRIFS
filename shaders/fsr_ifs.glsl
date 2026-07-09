@@ -1,7 +1,8 @@
 ﻿// =========================================================================
-// INTERSECTION FLUID SHARPEN (IFS) v0.1 & AMD FidelityFX FSR 1.0 PIPELINE
+// INTERSECTION FLUID SHARPEN (IFS) v1.0 & AMD FidelityFX FSR 1.0 PIPELINE
 // =========================================================================
 // IFS Algorithm Developed by: Aless(MaulSmoke)
+// Copyright (c) 2026 Aless(MaulSmoke) - All rights reserved.
 //
 // AMD FidelityFX FSR Copyright (c) 2021 Advanced Micro Devices, Inc.
 //
@@ -12,7 +13,7 @@
 // 
 //!HOOK MIXPASS
 //!BIND HOOKED
-//!DESC Intersection Fluid Sharpen (IFS) - Frame Generation
+//!DESC Intersection Fluid Sharpen (IFS) v1.0 - Frame Interpolation
 
 vec4 hook() {
     vec4 corOriginal = HOOKED_tex(HOOKED_pos);
