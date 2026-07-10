@@ -4,7 +4,7 @@
     [int]$fps,
 	[switch]$v,
     [string]$quality = "MED",
-	[int]$sharpness
+	[System.Nullable[int]]$sharpness
 )
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -96,7 +96,7 @@ if ($quality -notin @("LOW", "MED", "BIG")) {
 #  validation: sharpness
 if ($PSBoundParameters.ContainsKey('sharpness') -and (-not $scale -or $isScaleSame)) {
     Write-Warning "The '-sharpness' parameter can only be used when spatial upscaling ('-scale') is active and changing the resolution."
-    exit
+    $sharpness = $null
 }
 
 # ==========================================================================
@@ -155,7 +155,7 @@ if ($v) {
 
 # Set up sharpness: (Direct and robust string replacement): 0.0 (maximum) to 2.0 (minimum)
 if ($scale -and -not $isScaleSame) {
-    if (-not $sharpness) {
+    if (-not $PSBoundParameters.ContainsKey('sharpness')) {
         $sharpness = 5
     }
     $clampedUserSharpness = [math]::Max(0, [math]::Min(10, $sharpness)) / 10.0
@@ -210,7 +210,7 @@ elseif ($fps -and -not $scale) {
 }
 
 # add sharness information 
-if ($null -ne $sharpness -and $sharpness -ne 0 -and $sharpness -ne 5) {
+if ($null -ne $sharpness) {
 	$sufixo += "_SHARPNESS_$sharpness"
 }
 
