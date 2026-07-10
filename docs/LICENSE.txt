@@ -1,51 +1,53 @@
-FSRIFS v1.0.0 by Aless(MaulSmoke)
-
 ================================================================================
-CREDITS AND LICENSE ATTRIBUTIONS
+                        CREDITS AND LICENSE ATTRIBUTIONS
 ================================================================================
 
-This standalone package distributes a modular post-processing pipeline
-composed of open-source tools integrated with proprietary logic.
-Copyright and license details for each component are listed below:
+FSRIFS v1.0.0 by Aless (MaulSmoke)
+
+This standalone package distributes a modular post-processing pipeline composed 
+of established open-source tools integrated with custom authorial logic. 
+The individual copyrights and licenses for each component are detailed below:
 
 --------------------------------------------------------------------------------
-1. CORE COMPONENT: FFmpeg
+1. CORE COMPONENT: FFmpeg (Specific Custom Build)
 --------------------------------------------------------------------------------
-* Version Used: ffmpeg version N-125258-gdf94900c98-20260624
+* Version Used: ffmpeg version N-125258-gdf94900c98-20260624 (v8.x Ecosystem)
 * Copyright: Copyright (c) 2000-2026 the FFmpeg developers
-* Applicable License: GNU Lesser General Public License (LGPL v2.1 or later)
-or GNU General Public License (GPL v2.0 or later), depending on the
-compilation flags of the distributed binary.
-* Details: The original source code and rights for this orchestrator belong
-entirely to the FFmpeg community. Learn more at: https://ffmpeg.org
+* Applicable License: GNU General Public License (GPL v2.0 or later)
+* Details: The original source code belongs entirely to the FFmpeg community. 
+  Due to the static linking of advanced graphics libraries, this distributed 
+  binary operates under the strict terms of the GPL license.
+* SAFETY NOTE: This specific binary was extracted and compiled with native, 
+  stable support for 'libplacebo'. DO NOT replace or update this executable file 
+  with generic versions, or the FSRIFS pipeline will immediately stop working.
 
 --------------------------------------------------------------------------------
 2. RENDERING LIBRARY: libplacebo
 --------------------------------------------------------------------------------
-* Version Used: Build natively integrated into the core FFmpeg binary above.
+* Version Used: Compilation embedded natively within the main FFmpeg core binary.
 * Applicable License: GNU Lesser General Public License (LGPL v2.1 or later).
-* Details: Used to provide a low-level bridge via the Vulkan API on the GPU
-and enable synchronous shader injection into the video pipeline.
+* Details: Used to establish the low-level bridge via the Vulkan API on the GPU, 
+  enabling synchronous shader injection into the video stream pipeline.
 
 --------------------------------------------------------------------------------
-3. SPATIAL SCALING ALGORITHM: FidelityFX FSR
+3. SPATIAL SCALING ALGORITHM: AMD FidelityFX™ Super Resolution (FSR)
 --------------------------------------------------------------------------------
 * Version Used: FSR v1.0.2
 * Developed by: AMD (Advanced Micro Devices, Inc.)
-* Applicable License: MIT License (Open-Source, permissive). 
-* Details: Technology integrated into the shader's logic block for reconstructing
-physical edges and high-fidelity upscaling without the use of AI.
+* Applicable License: MIT License (Open-Source, permissive).
+* Details: Technology integrated into the shader's logical block for physical 
+  edge reconstruction and high-fidelity upscaling without utilizing any AI.
 
 --------------------------------------------------------------------------------
 4. TEMPORAL CONTROL ALGORITHM: INTERSECTION FLUID SHARPEN (IFS)
 --------------------------------------------------------------------------------
 * Version Used: IFS v1.0
-* Developed by: Aless (MaulSmole)
-* Applicable License: MIT License (Open-Source, permissive). 
-* Details: Proprietary custom shader responsible for creating the dynamic
-motion mask and structural shielding for static elements (HUD/Fonts).
+* Developed by: Aless (MaulSmoke)
+* Applicable License: MIT License (Open-Source, permissive).
+* Details: Custom authorial shader responsible for generating the dynamic 
+  motion mask and structural shielding for static elements (HUD/Fonts).
 
 ================================================================================
-Disclaimer: All trademarks, logos, and third-party tools cited in this document
-are the exclusive property of their respective authors and corporations.
+Disclaimer: All third-party trademarks, logos, and software tools mentioned in 
+this document are the exclusive property of their respective authors and corporations.
 ================================================================================

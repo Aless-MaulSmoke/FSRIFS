@@ -1,23 +1,24 @@
-FSRIFS v1.0.0 by Aless(MaulSmoke)
-
 ================================================================================
                     CRÉDITOS E ATRIBUIÇÕES DE LICENÇA
 ================================================================================
 
+FSRIFS v1.0.0 by Aless (MaulSmoke)
+
 Este pacote standalone distribui uma pipeline de pós-processamento modular 
-composta por ferramentas de código aberto integradas a uma lógica proprietária. 
+composta por ferramentas de código aberto integradas a uma lógica autoral. 
 Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
 
 --------------------------------------------------------------------------------
-1. COMPONENTE CORE: FFmpeg
+1. COMPONENTE CORE: FFmpeg (Compilação Customizada Específica)
 --------------------------------------------------------------------------------
-* Versão Utilizada: ffmpeg version N-125258-gdf94900c98-20260624
+* Versão Utilizada: ffmpeg version N-125258-gdf94900c98-20260624 (Ecos. v8.x)
 * Copyright: Copyright (c) 2000-2026 the FFmpeg developers
-* Licença Aplicável: GNU Lesser General Public License (LGPL v2.1 ou posterior) 
-  ou GNU General Public License (GPL v2.0 ou posterior), dependendo dos sinalizadores 
-  de compilação do binário distribuído.
-* Detalhes: O código-fonte original e os direitos deste orquestrador pertencem 
-  integralmente à comunidade FFmpeg. Saiba mais em: https://ffmpeg.org
+* Licença Aplicável: GNU General Public License (GPL v2.0 ou posterior)
+* Detalhes: O código-fonte original pertence à comunidade FFmpeg. Devido à 
+  vinculação estática de bibliotecas gráficas, o binário opera sob licença GPL.
+* NOTA DE SEGURANÇA: Este binário foi extraído especificamente com suporte 
+  nativo e estável ao 'libplacebo'. NÃO substitua ou atualize este arquivo 
+  executável por versões genéricas, pois a pipeline FSRIFS deixará de funcionar.
 
 --------------------------------------------------------------------------------
 2. BIBLIOTECA DE RENDERIZAÇÃO: libplacebo
@@ -28,7 +29,7 @@ Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
   e possibilitar a injeção síncrona de shaders na pipeline de vídeo.
 
 --------------------------------------------------------------------------------
-3. ALGORITMO DE ESCALA ESPACIAL: FidelityFX FSR
+3. ALGORITMO DE ESCALA ESPACIAL: AMD FidelityFX™ Super Resolution (FSR)
 --------------------------------------------------------------------------------
 * Versão Utilizada: FSR v1.0.2
 * Desenvolvido por: AMD (Advanced Micro Devices, Inc.)
@@ -40,9 +41,9 @@ Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
 4. ALGORITMO DE CONTROLE TEMPORAL: INTERSECTION FLUID SHARPEN (IFS)
 --------------------------------------------------------------------------------
 * Versão Utilizada: IFS v1.0
-* Desenvolvido por: Aless (MaulSmole)
+* Desenvolvido por: Aless (MaulSmoke)
 * Licença Aplicável: Licença MIT (Open-Source, permissiva).
-* Detalhes: Shader customizado proprietário responsável pela criação da máscara 
+* Detalhes: Shader customizado autoral responsável pela criação da máscara 
   dinâmica de movimento e blindagem estrutural de elementos estáticos (HUD/Fontes).
 
 ================================================================================
