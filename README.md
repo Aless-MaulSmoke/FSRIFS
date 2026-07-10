@@ -1,4 +1,6 @@
 # FSRIFS (FSR+IFS): Video Upscale & Frame Generator for Weak PCs
+* **FSR:** FidelityFX Super Resolution by AMD
+* **IFS:** Intersection Fluid Sharpen by Aless(MaulSmoke)
 
 An ultra-lightweight video post-processing pipeline tailored for legacy hardware, combining open-source tools with pure mathematical logic executed directly on the GPU silicon via Vulkan.
 
