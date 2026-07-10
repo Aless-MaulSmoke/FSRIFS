@@ -125,4 +125,4 @@ Você pode extrair todos os frames de X segundos iniciando em um determinado tem
 
 * **Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline:** por Aless (MaulSmoke).
 * **Tecnologias de Terceiros Utilizadas:** FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).
-* **Canal Oficial do Projeto (YouTube):** Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: https://youtube.com
+* **Canal Oficial do Projeto (YouTube): Assista aos tutoriais, showcase de performance: [YouTube (@toplayaless)](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk)

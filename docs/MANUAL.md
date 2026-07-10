@@ -125,4 +125,4 @@ You can extract all frames from X seconds starting at a specific time in the vid
 
 * **Conception, Authorship of the IFS Shader (MIT) and Pipeline Integration:** by Aless (MaulSmoke).
 * **Third-Party Technologies Used:** FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).
-* **Official Project Channel (YouTube):** Watch tutorials, news, performance showcases, and get your questions answered directly in the channel's community: https://youtube.com
+* **Official Project Channel:** Watch tutorials and performance showcases on: [YouTube (@toplayaless)](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk)
