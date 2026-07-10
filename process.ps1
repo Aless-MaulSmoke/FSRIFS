@@ -16,6 +16,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $ffmpeg  = ".\ffmpeg\bin\ffmpeg.exe"
 $ffprobe = ".\ffmpeg\bin\ffprobe.exe"
 
+# log files path
+$logpath = ".\log\"
+
 # Single merged shader file containing both FSR and IFS code blocks
 $shader = ".\shaders\fsr_ifs.glsl"
 
@@ -227,6 +230,11 @@ Write-Host "============================================================"
 Write-Host " RUNNING UNIFIED MANAGEMENT SCRIPT VIA VULKAN & AMF PIPELINE"
 Write-Host "============================================================"
 
+# setup log file 
+$processLog = Join-Path $logpath "${outName}${sufixo}.txt"
+$env:FFREPORT = "file='$processLog':level=32"
+$startTime = [DateTime]::Now
+
 # Execution pipeline binding passthrough timings alongside hardware accelerated AMF encoding
 & $ffmpeg $verboseArgs -i "$file" `
     -vf "$vfString" `
@@ -236,13 +244,86 @@ Write-Host "============================================================"
     -c:a copy -y `
     "$outFile"
 
+# end log process
+Remove-Item env:\FFREPORT
+
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "============================================================"
-    Write-Host " [SUCCESS] Pipeline execution finished successfully!"
-    Write-Host " Output file generated: $outFile"
-    Write-Host "============================================================"
+    # 1. Records the end, calculates the duration, and formats the times for the summary
+    $endTime = [DateTime]::Now
+    $duration = $endTime - $startTime
+    $elapsedTime = "{0:d2}:{1:d2}:{2:d2}" -f $duration.Hours, $duration.Minutes, $duration.Seconds
+    $strStart = $startTime.ToString("HH:mm:ss")
+    $strEnd   = $endTime.ToString("HH:mm:ss")
+
+    # Initialize the display variables
+    $speed       = "N/A"
+    $bitrate     = "N/A"
+    $finalSizeMB = "N/A"
+
+    # 2. Parses the FFREPORT log file handling the "Lsize"
+    if (Test-Path $processLog) {
+        $logLines = Get-Content $processLog
+        
+        for ($i = $logLines.Count - 1; $i -ge 0; $i--) {
+            $linhaAtual = $logLines[$i].Trim()
+            
+            # Updated regex to accept both "size=" and "Lsize=" from the FFmpeg output
+            if ($linhaAtual -match '(?:L)?size=\s*(?<size>[0-9a-zA-Z.]+)\s+time=\s*(?<time>\S+)\s+bitrate=\s*(?<bitrate>\S+)\s+speed=\s*(?<speed>\S+)') {
+                $speed   = $Matches['speed']
+                $bitrate = $Matches['bitrate']
+                $rawSize = $Matches['size']
+                
+                $numericSize = [double]($rawSize -replace '[^0-9.]', '')
+                
+                if ($rawSize -like "*KiB*" -or $rawSize -like "*kB*") {
+                    $finalSizeMB = "{0:N2} MB" -f ($numericSize / 1024)
+                } elseif ($rawSize -like "*MiB*" -or $rawSize -like "*MB*") {
+                    $finalSizeMB = "{0:N2} MB" -f $numericSize
+                }
+                break
+            }
+        }
+    }
+
+    # 3. Absolute guarantee: if the log fails, it reads the actual file size straight from the HD
+    if ($finalSizeMB -eq "N/A" -and (Test-Path "$outFile")) {
+        $fileLength = (Get-Item "$outFile").Length
+        $finalSizeMB = "{0:N2} MB" -f ($fileLength / 1MB)
+    }
+
+
+	# Banner ASCII 
+    Write-Host "=======================================================================" -ForegroundColor DarkCyan
+    Write-Host "  ______  _____  _____   _____  ______  _____ " -ForegroundColor Red
+    Write-Host " |  ____|/ ____||  __ \ |_   _||  ____|/ ____|" -ForegroundColor Red
+    Write-Host " | |__  | (___  | |__) |  | |  | |__  | (___  " -ForegroundColor Red
+    Write-Host " |  __|  \___ \ |  _  /   | |  |  __|  \___ \ " -ForegroundColor White
+    Write-Host " | |     ____) || | \ \  _| |_ | |     ____) |" -ForegroundColor White
+    Write-Host " |_|    |_____/ |_|  \_\|_____||_|    |_____/ " -ForegroundColor White
+    Write-Host "                                              " -ForegroundColor White
+    Write-Host "         PROCESS COMPLETED SUCCESSFULLY       " -ForegroundColor Green
+    Write-Host "=======================================================================" -ForegroundColor DarkCyan
+
+    # Input Statistics / User Parameters
+    Write-Host " Target Resolution : $widthOut x $heightOut" -ForegroundColor White
+    Write-Host " Target Framerate  : $(if($fps){$fps}else{$fpsOriginal}) FPS" -ForegroundColor White
+    Write-Host " Quality Profile   : $quality (QP I:$qp_i / P:$qp_p)" -ForegroundColor White
+    Write-Host " FSR Sharpness     : $(if($sharpness){$sharpness}else{'N/A'})" -ForegroundColor White
+    Write-Host "-----------------------------------------------------------------------" -ForegroundColor DarkCyan
+
+    # Extracted Statistics and Schedules
+    Write-Host " Total Render Time : $elapsedTime ($strStart -> $strEnd)" -ForegroundColor Yellow
+    Write-Host " Processing Speed  : $speed" -ForegroundColor Yellow
+    Write-Host " Final File Size   : $finalSizeMB" -ForegroundColor Yellow
+    Write-Host " Video Bitrate     : $bitrate" -ForegroundColor Yellow
+    Write-Host " Session Log Saved : $processLog" -ForegroundColor Gray
+    Write-Host "=======================================================================" -ForegroundColor Cyan
+    Write-Host " Author: Aless (MaulSmoke) | Community: YouTube (@toplayaless)" -ForegroundColor DarkGray
+    Write-Host "=======================================================================" -ForegroundColor Cyan
+    Write-Host ""
 } else {
     Write-Host "============================================================"
     Write-Host " [ERROR] The FFmpeg processing pipeline failed."
     Write-Host "============================================================"
 }
+

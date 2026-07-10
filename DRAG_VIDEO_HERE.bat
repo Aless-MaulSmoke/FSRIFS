@@ -54,8 +54,4 @@ powershell -ExecutionPolicy Bypass -Command ".\process.ps1 -file $env:MY_INPUT_F
 :: Clears the temporary variable
 set "MY_INPUT_FILE="
 
-echo.
-echo =======================================================
-echo             PROCESS COMPLETED SUCCESSFULLY!
-echo =======================================================
 pause
