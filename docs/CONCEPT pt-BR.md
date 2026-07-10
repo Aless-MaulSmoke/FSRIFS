@@ -1,4 +1,4 @@
-# Conceito de Script para Upscale e Frame Generator (FSR + IFS) para PCs Fracos
+# FSRIFS (FSR + IFS) Upscale e Frame Generator para PCs Fracos
 
 ## 1. A Raiz do Projeto (A Necessidade)
 Rodar um jogo pesado e ainda gravar em alta resolução é uma tarefa que exige um PC robusto, e mesmo assim esses parrudões sofrem para essa tarefa dupla. Então o processo entre jogar e gravar é segmentado. Primeiro o jogo é gravado em uma resolução tranquila para que o PC gamer possa usar configuração gráfica no ultra com direito a ray tracing. Depois de gravado, o vídeo final é submetido ao processo de upscaling (aumento nítido de resolução) e às vezes ao processo de geração de frames. Alguns jogos pesados podem ser gravados em 30 ou 48 FPS e depois novos frames são criados artificialmente. Tudo isso usando o melhor do que a IA tem a nos oferecer em computadores realmente robustos.
@@ -58,4 +58,5 @@ Este ecossistema distribui uma pipeline de pós-processamento modular composta p
 ### CRÉDITOS E SUPORTE TÉCNICO
 * Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline: por Aless (MaulSmoke).
 * Tecnologias de Terceiros Utilizadas: FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).
-* Canal Oficial do Projeto (YouTube): Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: https://youtube.com
+* Canal Oficial do Projeto (YouTube): Assista aos tutoriais, showcase de performance: 
+[YouTube (@toplayaless)](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk)
