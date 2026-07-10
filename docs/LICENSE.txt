@@ -1,0 +1,51 @@
+FSRIFS v1.0.0 by Aless(MaulSmoke)
+
+================================================================================
+CREDITS AND LICENSE ATTRIBUTIONS
+================================================================================
+
+This standalone package distributes a modular post-processing pipeline
+composed of open-source tools integrated with proprietary logic.
+Copyright and license details for each component are listed below:
+
+--------------------------------------------------------------------------------
+1. CORE COMPONENT: FFmpeg
+--------------------------------------------------------------------------------
+* Version Used: ffmpeg version N-125258-gdf94900c98-20260624
+* Copyright: Copyright (c) 2000-2026 the FFmpeg developers
+* Applicable License: GNU Lesser General Public License (LGPL v2.1 or later)
+or GNU General Public License (GPL v2.0 or later), depending on the
+compilation flags of the distributed binary.
+* Details: The original source code and rights for this orchestrator belong
+entirely to the FFmpeg community. Learn more at: https://ffmpeg.org
+
+--------------------------------------------------------------------------------
+2. RENDERING LIBRARY: libplacebo
+--------------------------------------------------------------------------------
+* Version Used: Build natively integrated into the core FFmpeg binary above.
+* Applicable License: GNU Lesser General Public License (LGPL v2.1 or later).
+* Details: Used to provide a low-level bridge via the Vulkan API on the GPU
+and enable synchronous shader injection into the video pipeline.
+
+--------------------------------------------------------------------------------
+3. SPATIAL SCALING ALGORITHM: FidelityFX FSR
+--------------------------------------------------------------------------------
+* Version Used: FSR v1.0.2
+* Developed by: AMD (Advanced Micro Devices, Inc.)
+* Applicable License: MIT License (Open-Source, permissive). 
+* Details: Technology integrated into the shader's logic block for reconstructing
+physical edges and high-fidelity upscaling without the use of AI.
+
+--------------------------------------------------------------------------------
+4. TEMPORAL CONTROL ALGORITHM: INTERSECTION FLUID SHARPEN (IFS)
+--------------------------------------------------------------------------------
+* Version Used: IFS v1.0
+* Developed by: Aless (MaulSmole)
+* Applicable License: MIT License (Open-Source, permissive). 
+* Details: Proprietary custom shader responsible for creating the dynamic
+motion mask and structural shielding for static elements (HUD/Fonts).
+
+================================================================================
+Disclaimer: All trademarks, logos, and third-party tools cited in this document
+are the exclusive property of their respective authors and corporations.
+================================================================================

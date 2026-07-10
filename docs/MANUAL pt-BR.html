@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANUAL DE UTILIZAÇÃO PRÁTICA: FSRIFS</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #212529;
+            --primary-color: #0071e3;
+            --border-color: #e5e5e5;
+            --code-bg: #f5f5f7;
+            --code-text: #bf1b00;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #f1f1f1;
+            --accent-bg: #fff9db;
+            --accent-border: #f59f00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #111;
+            display: flex;
+            align-items: center;
+        }
+
+        h3 {
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #000;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        pre {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        pre code {
+            background-color: transparent;
+            color: var(--terminal-text);
+            padding: 0;
+            font-size: 14px;
+        }
+
+        .note {
+            background-color: var(--accent-bg);
+            border-left: 4px solid var(--accent-border);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 35px 0;
+        }
+
+        .badge {
+            background-color: #e03131;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
+    <div class="subtitle">MANUAL DE UTILIZAÇÃO PRÁTICA</div>
+
+    <h2>Requisitos e Dependências de Hardware</h2>
+    <p>Para que a pipeline de pós-processamento funcione corretamente no seu computador, o seu sistema precisa cumprir as seguintes dependências físicas e de software:</p>
+    <ul>
+        <li><strong>Compatibilidade com API Vulkan <span class="badge">Obrigatório</span>:</strong> A sua placa de vídeo precisa ter suporte nativo à tecnologia Vulkan. O shader autoral IFS roda os cálculos temporais diretamente no silício da GPU através dessa API. Funciona em placas de vídeo dedicadas (AMD RX, Nvidia GTX/RTX) e também em chips integrados (AMD Vega ou Intel HD Graphics mais recentes). Se a sua GPU não tiver suporte a Vulkan, o processo não iniciará.</li>
+        <li><strong>Processador (CPU):</strong> Qualquer processador básico de 4 ou 6 núcleos antigos (como a linha AMD FX ou Intel Core de gerações passadas) é perfeitamente capaz de rodar a pipeline. O uso médio de CPU fica na casa dos 45%, mantendo o Windows totalmente livre de travamentos ou superaquecimento durante a renderização.</li>
+        <li><strong>Memória de Vídeo (VRAM):</strong> Placas de vídeo legadas com 2GB de VRAM dão conta do recado tranquilamente se o usuário operar com inteligência. Recomenda-se fechar navegadores de internet, Discord e jogos em segundo plano antes de iniciar o processo em resoluções altas (como 2K ou 4K) to evitar estouro de memória da placa.</li>
+        <li><strong>Sistema Operacional:</strong> Windows 10 ou Windows 11 de 64-bits com o terminal PowerShell ativo e liberado para execução de scripts.</li>
+    </ul>
+
+    <div class="section-divider"></div>
+
+    <h2>Instalação</h2>
+    <ol>
+        <li>Inicie baixando o zip com o conteúdo.</li>
+        <li>Descompacte onde desejar. Você verá toda a estrutura de pastas do <code>FSRIFS</code>.</li>
+        <li>O Processo todo se desenrola dentro de um prompt do powershell (conhecer comandos básicos de navegação nas pastas via comando é importante).</li>
+        <li>Vamos iniciar abrindo o powershell, não precisa ser em modo adm o script não vai precisar de privilégios para rodar.</li>
+    </ol>
+    <p>Se for a sua primeira vez rodando scripts no computador, digite o comando abaixo para permitir a execução de scripts:</p>
+    <pre><code>Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process</code></pre>
+    <p>Responda <strong>SIM</strong> para aplicar a política de execução.</p>
+
+    <div class="section-divider"></div>
+
+    <h2>Como Executar</h2>
+    <p>Ok! Agora estamos prontos para rodar os processos e você pode fazer isso de duas maneiras:</p>
+
+    <h3>Método 1: Drag & Drop</h3>
+    <p>Essa é a forma mais fácil de executar a pipeline. Voltado para usuários sem conhecimento em prompt.</p>
+    <ol>
+        <li>Usando o explorador de arquivos, acesse a sua pasta onde descompactou o <code>FSRIFS</code>, vc verá um arquivo chamado <code>DRAG_VIDEO_HERE.bat</code>.</li>
+        <li>Agora abra outra janela de explorador de arquivos e vá até a pasta onde tem o vídeo que você deseja processar.</li>
+        <li>Arraste o seu vídeo e solte sobre o arquivo que mencionamos.</li>
+    </ol>
+    <p>Você pode configurar o processo editando o arquivo <code>DRAG_CONFIG.txt</code>:</p>
+    <pre><code>[DRAG_SETTINGS]
+SCALE=1920x1080
+SHARPNESS=5
+FPS=60
+QUALITY=med
+VERBOSE=false</code></pre>
+
+    <h3>Método 2: PowerShell (Terminal)</h3>
+    <p>Esse é o método original para você processar seus vídeos, necessário conhecimento de prompt.</p>
+    <p>Precisamos acessar o local onde você descompactou o FSRIFS. Por exemplo:</p>
+    <pre><code>cd "D:\FSRIFS"</code></pre>
+    <p>Você estará assim na pasta da pipeline e poderá executar dois scripts:</p>
+
+    <h3>1. <code>process.ps1</code></h3>
+    <p>Nosso script principal com ele podemos fazer upscale e ou gerar fps. O script atua de forma modular, você pode acessar esses módulos através de parâmetros na linha de comando, vamos conhecer eles:</p>
+    <ul>
+        <li><code>-file "nome_do_arquivo.mp4"</code>: O caminho completo do arquivo de vídeo que você deseja processar. Deve ser colocado entre aspas.</li>
+        <li><code>-scale fator|resolução</code>: Dimensão final do vídeo. Se omitido, o upscale não acontece e o tamanho original é mantido. O valor pode ser informado nos formatos:
+            <ul>
+                <li>fator multiplicador para o ganho de resolução. Use números decimais (ex: o fator de dimensão de um vídeo de 720p para 1080p é <code>1.5</code>).</li>
+                <li>resolução literal onde vc pode informar por exemplo: <code>"1920x1080"</code>.</li>
+            </ul>
+        </li>
+        <li><code>-fps número</code>: A taxa de quadros desejada para a fluidez (ex: 60). Se omitido, a geração de quadros não acontece e os FPS originais são mantidos.</li>
+        <li><code>-quality "low|med|big"</code>: O perfil de peso, compressão e tamanho do arquivo final. Se você omitir este parâmetro, o sistema assumirá automaticamente o perfil equilibrado <code>"med"</code>. As opções disponíveis são:
+            <ul>
+                <li><code>low</code>: Foco em economia drástica de espaço. Reduz o peso do arquivo final e alivia o uso de VRAM. Gera um arquivo final pequeno.</li>
+                <li><code>med</code>: O ponto de equilíbrio ideal. Mantém a nitidez das bordas e a fidelidade visual sem estourar o HD. Gera um arquivo final de tamanho mediano.</li>
+                <li><code>big</code>: Máxima fidelidade visual e alta taxa de bits, voltado para arquivamento ou upload em alta qualidade. Gera um arquivo final enorme.</li>
+            </ul>
+        </li>
+        <li><code>-sharpness número</code>: Qualidade aplicada pelo FSR indo de <code>0</code> (mínimo) até <code>10</code> (máximo).</li>
+        <li><code>-v</code>: Modo verbose, onde informações detalhadas sobre o processo são listadas no terminal.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Nota de Segurança:</strong> O script exige que você use pelo menos o <code>-scale</code> ou o <code>-fps</code>.
+    </div>
+
+    <h4>Exemplos de Comandos:</h4>
+    <p><strong>Fazer APENAS o Upscale (digamos que de 720p para 1080p, com nitidez mediana, então aplicamos uma escala de 1.5x e nitidez 5):</strong></p>
+    <pre><code>.\process.ps1 -file "C:\pasta\video.mp4" -scale 1.5 -sharpness 5</code></pre>
+
+    <p><strong>Fazer APENAS a Geração de Frames (digamos que seu vídeo original tem 30fps):</strong></p>
+    <pre><code>.\process.ps1 -file "C:\pasta\video.mp4" -fps 60</code></pre>
+
+    <p><strong>Pipeline Completa (Upscale 1080p + geração de frames 60 FPS + verificando um log detalhado no prompt):</strong></p>
+    <pre><code>.\process.ps1 -file "C:\pasta\video.mp4" -scale "1920x1080" -fps 60 -v</code></pre>
+
+    <h4>Nomenclatura dos Arquivos de Saída</h4>
+    <p>O script irá identificar a origem do seu arquivo e salva o resultado final exatamente na mesma pasta do vídeo original. O nome do novo arquivo é gerado de forma inteligente com sufixos baseados no que você escolheu fazer:</p>
+    <ul>
+        <li>Se usou apenas o upscale: <code>video_FSR_1080x720.mp4</code>.</li>
+        <li>Se usou apenas os frames: <code>video_60fps.mp4</code>.</li>
+        <li>Se usou a pipeline completa: <code>video_FSR_1080x720_60fps.mp4</code>.</li>
+    </ul>
+
+    <h3>2. <code>extract.ps1</code></h3>
+    <p>Script para extrair alguns frames do vídeo processado para você poder avaliar via frame se o resultado está bom. Você pode extrair todos os frames de x segundos iniciando em um determinado tempo do vídeo. É a ferramenta ideal para você avaliar visualmente a qualidade do resultado final, permitindo conferir frame por frame.</p>
+    <p>Parâmetros na linha de comando:</p>
+    <ul>
+        <li><code>-file "arquivo"</code>: O caminho completo do arquivo de vídeo que você deseja processar. Deve ser colocado entre aspas.</li>
+        <li><code>-time "hh:mm:ss"</code>: O ponto de início da extração no formato HH:MM:SS. Se não for preenchido, começará automaticamente aos 3 segundos (<code>00:00:03</code>).</li>
+        <li><code>-secs número</code>: Quantos segundos de vídeo você quer transformar em fotos. Se não for preenchido, extrairá apenas 1 segundo (se o vídeo estiver em 60fps, então serão extraídos 60 frames).</li>
+        <li><code>-output "pasta destino"</code>: Pasta onde salvar as fotos (entre aspas duplas). Se não for preenchido, o script irá extrair os frames dentro da pasta <code>output</code> na raiz da FSRIFS.</li>
+    </ul>
+
+    <h2>Problemas Conhecidos / Limitações Técnicas</h2>
+    <h3>Borrão ou Suavização ao Pausar (Freeze Frame Artifacts)</h3>
+    <ul>
+        <li><strong>Sintoma:</strong> Ao pausar o vídeo final durante cenas de movimentação rápida, a imagem pode parecer suave, borrada ou apresentar um efeito de "fantasma".</li>
+        <li><strong>Causa:</strong> O player de vídeo congelou o relógio de reprodução exatamente em cima de um quadro intermediário (interpolado) gerado pela matemática temporal do shader IFS.</li>
+        <li><strong>Solução:</strong> Não há o que corrigir. Esse comportamento é a mecânica necessária para garantir a ilusão de fluidez na geração de frames com o vídeo em movimento, sem exigir IA pesada ou hardware com Tensor Cores. É o preço que se paga para uma solução voltada a low-end PC.</li>
+    </ul>
+
+    <h2>Créditos e Suporte Técnico</h2>
+    <ul>
+        <li><strong>Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline:</strong> por Aless(MaulSmoke).</li>
+        <li><strong>Tecnologias de Terceiros Utilizadas:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
+        <li><strong>Canal Oficial do Projeto (YouTube):</strong> Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">Canal do YouTube</a>.</li>
+    </ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conceito do Projeto: FSR + IFS</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #212529;
+            --primary-color: #e03131;
+            --border-color: #e5e5e5;
+            --accent-bg: #e6f7ff;
+            --accent-border: #1890ff;
+            --quote-bg: #f5f5f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h2 {
+            font-size: 19px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        h3 {
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 15px;
+            text-align: justify;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        strong {
+            color: #000;
+        }
+
+        .highlight-box {
+            background-color: var(--accent-bg);
+            border-left: 4px solid var(--accent-border);
+            padding: 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+
+        .quote-box {
+            background-color: var(--quote-bg);
+            border-left: 4px solid #868e96;
+            padding: 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 14.5px;
+            color: #495057;
+        }
+
+        .section-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 35px 0;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, monospace;
+            background-color: #f1f3f5;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
+    <div class="subtitle">DESCRIÇÃO DO PROJETO</div>
+
+    <h2>1. A Raiz do Projeto (A Necessidade)</h2>
+    <p>Rodar um jogo pesado e ainda gravar a gameplay em alta resolução é uma tarefa que exige um computador extremamente robusto. Mesmo assim, esses sistemas parrudas sofrem para dar conta dessa dupla jornada de processamento em tempo real.</p>
+    <p>A solução ideal para esse cenário é segmentar o fluxo de trabalho: primeiro, o jogo é gravado em uma resolução mais tranquila (permitindo que o jogador utilize configurações gráficas no Ultra, com direito a Ray Tracing). Posteriormente, o arquivo de vídeo final é submetido ao processo de upscaling (aumento nítido de resolução) e, se necessário, à geração de novos quadros (interpolação de frames).</p>
+    <p>Dessa forma, jogos pesados capturados originalmente em 30 ou 48 FPS ganham novos quadros criados artificialmente, alcançando excelente fluidez. No entanto, as soluções de mercado que fazem isso dependem de processamentos pesados de Inteligência Artificial, exigindo CPUs e GPUs de última geração com núcleos dedicados, além de um consumo massivo de VRAM — recursos totalmente fora da realidade de placas de vídeo de entrada (low-end).</p>
+
+    <div class="highlight-box">
+        <strong>Você tem um low-end PC?</strong><br>
+        O meu ambiente de desenvolvimento conta com um processador <strong>AMD FX-6300</strong> e uma GPU <strong>Radeon RX 550 de 4GB</strong>. Em configurações desse nível, torna-se impossível rodar os softwares de upscale baseados em IA mais conhecidos do mercado. É justamente aí que este projeto se faz necessário: muitas vezes o limite físico da máquina só permite gravar gameplays em 720p a 30fps com qualidade, um padrão considerado muito baixo para as plataformas de publicação atuais.
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>2. A Virada de Chave: Ampliando Resolução e Frames de Forma Leve</h2>
+    <p>A inspiração para o nascimento deste projeto surgiu da experiência prática utilizando o software <em>Lossless Scaling</em> em jogos em tempo real. Ao observar que um computador modesto conseguia aplicar FSR para ampliar a resolução e utilizar o gerador de frames LSFG para transformar uma experiência de jogo de 720p/30fps em uma jogabilidade fluida de 1080p/60fps sem comprometer a integridade do hardware, surgiu um questionamento fundamental:</p>
+    <p style="font-style: italic; text-align: center; color: #495057; margin: 20px 0;">
+        "Se esse princípio matemático funciona de forma tão leve e eficiente em um jogo rodando em tempo real, por que não aplicá-lo em um arquivo de vídeo de 720p/30fps previamente gravado para expandi-lo para 1080p/60fps ou mais?"
+    </p>
+
+    <div class="section-divider"></div>
+
+    <h2>3. Nasce um Upscale e Frame Generator Verdadeiramente Leve</h2>
+    <p>Para materializar o conceito de pós-processamento de vídeo leve e focado em hardware legado, uniu-se o poder de ferramentas de código aberto (open-source) consagradas ao desenvolvimento de uma lógica matemática executada diretamente na GPU. O ecossistema se sustenta sobre quatro pilares fundamentais:</p>
+    
+    <p style="text-align: center; font-weight: bold; margin: 15px 0;">
+        <code>ffmpeg</code> + <code>Vulkan</code> + <code>AMD FidelityFX FSR 1.0</code> + <code>IFS (Intersection Fluid Sharpen)</code>
+    </p>
+
+    <p>Embora componham quatro camadas tecnológicas distintas, todas funcionam fundidas sob o mesmo processo automatizado que você dispara facilmente por comandos no seu PowerShell:</p>
+
+    <ul>
+        <li><strong>FFmpeg:</strong> O motor principal responsável pela manipulação, leitura e codificação final dos fluxos de vídeo.</li>
+        <li><strong>Vulkan:</strong> A API gráfica de baixo nível utilizada como dependência obrigatória. Se a sua placa de vídeo oferece suporte a ela, a aceleração por hardware está garantida.</li>
+        <li><strong>AMD FidelityFX FSR:</strong> Shader focado em upscaling espacial executado diretamente na GPU, ampliando a resolução com preservação de bordas sem depender de nenhuma estrutura de IA.</li>
+        <li><strong>IFS (Intersection Fluid Sharpen):</strong> Um shader de minha autoria desenvolvido especificamente para gerar quadros intermediários sem o uso de IA. Ele trabalha de forma extremamente veloz consumindo o mínimo de recursos gráficos. A inspiração matemática para a sua construção veio dos processos de interseção de objetos comuns em softwares de edição vetorial.</li>
+    </ul>
+    <div class="section-divider"></div>
+
+    <h2>3.1. Requisitos e Dependências de Hardware</h2>
+    <p>Para garantir a estabilidade e o bom funcionamento de toda a pipeline de pós-processamento, a sua máquina precisa preencher os seguintes requisitos mínimos de hardware:</p>
+    <ul>
+        <li><strong>Processador (CPU):</strong> Qualquer modelo básico ou antigo de 4 ou 6 núcleos (como a antiga linha AMD FX ou processadores Intel Core de gerações passadas). Durante o desenvolvimento e a homologação desta pipeline, foi utilizado um processador <strong>AMD FX-6300 com 8GB de RAM</strong> (arquitetura lançada originalmente em 2012).</li>
+        <li><strong>Placa de Vídeo (GPU):</strong> É obrigatório que a sua placa possua suporte nativo à API Vulkan. O ecossistema roda perfeitamente tanto em GPUs dedicadas (AMD RX, Nvidia GTX/RTX) quanto em soluções de vídeo integrado mais recentes (AMD Vega ou Intel HD Graphics). No laboratório de testes deste projeto, utilizamos uma placa de entrada <strong>AMD Radeon RX 550 de 4GB de VRAM</strong> (lançada em 2017).</li>
+    </ul>
+    <p>Mesmo operando sob essas limitações físicas severas e utilizando o hardware antigo de testes, o ecossistema demonstrou excelente eficiência de software. A pipeline foi capaz de entregar taxas de renderização de até 2.0x (metade do tempo de duração do vídeo) para arquivos de saída configurados em 1080p/60fps, além de apresentar total estabilidade em processos de renderização pesados na resolução 4K.</p>
+
+    <div class="section-divider"></div>
+
+    <h2>4. Conclusão e Veredito da Eficiência</h2>
+    <p>Este conceito serve como prova prática de que a otimização inteligente de software consegue contornar limitações físicas severas de peças defasadas. Substituir cálculos complexos de redes neurais artificiais por instruções matemáticas diretas, limpas e baratas para a arquitetura de silício da GPU traz um fôlego inédito para computadores antigos. É tudo o que o <em>Lossless Scaling</em> oferece, adaptado para o cenário de pós-processamento de arquivos de vídeo locais.</p>
+
+    <div class="quote-box">
+        "Como todo o processo de upscale deste ecossistema é feito via tecnologia AMD FSR, é altamente recomendado que os seus arquivos de origem sejam estritamente gameplays de jogos. O algoritmo foi desenvolvido especificamente para tratar e polir elementos gráficos digitais, bordas de polígonos e texturas geradas por renderização em tempo real. Tentar submeter gravações reais — como filmes, séries ou vídeos capturados por câmeras de celular — quebrará a lógica matemática do processo, e você poderá não obter o resultado esperado."
+    </div>
+
+    <p style="text-align: center; font-weight: bold; font-size: 16px; margin: 25px 0; color: var(--primary-color);">
+        Se você também possui um low-end PC, venha ser feliz comigo!
+    </p>
+
+    <div class="section-divider"></div>
+
+    <h2>5. Créditos e Atribuições de Licença</h2>
+    <p>Este ecossistema integra e distribui uma pipeline de pós-processamento totalmente modular, composta por softwares consolidados de código aberto combinados a uma camada de lógica autoral. Abaixo estão listados os direitos e licenças individuais de cada componente:</p>
+    <ul>
+        <li><strong>Componente Core (FFmpeg):</strong> Versão N-125258-gdf94900c98-20260624. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em> ou <em>GNU General Public License (GPL v2.0 ou posterior)</em>.</li>
+        <li><strong>Biblioteca de Renderização (libplacebo):</strong> Compilação embarcada nativamente no binário principal do FFmpeg listado acima. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em>.</li>
+        <li><strong>Algoritmo de Escala Espacial (FidelityFX FSR):</strong> Versão v1.0.2. Desenvolvido e registrado por Advanced Micro Devices, Inc. (AMD). Licença aplicável: <em>Licença MIT (Open-Source e amplamente permissiva)</em>.</li>
+        <li><strong>Algoritmo Gerador de Frames (Intersection Fluid Sharpen - IFS):</strong> Versão v0.1. Desenvolvido por Aless (MaulSmoke). Licença aplicável: <em>Licença MIT (Open-Source e de uso livre)</em>.</li>
+    </ul>
+
+    <h2>Créditos e Suporte Técnico</h2>
+    <ul>
+        <li><strong>Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline:</strong> por Aless (MaulSmoke).</li>
+        <li><strong>Tecnologias de Terceiros Utilizadas:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
+        <li><strong>Canal Oficial do Projeto (YouTube):</strong> Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">Canal do YouTube</a>.</li>
+    </ul>
+</div>
+
+</body>
+</html>
