@@ -1,4 +1,4 @@
-# FSRIFS: Video Upscale & Frame Generator for Weak PCs
+# FSRIFS v1.0.1: Video Upscale & Frame Generator for Weak PCs
 * **FSR:** FidelityFX Super Resolution by AMD
 * **IFS:** Intersection Fluid Sharpen by Aless(MaulSmoke)
 

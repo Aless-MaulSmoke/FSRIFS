@@ -194,11 +194,8 @@ $sufixo = "_QUALITY_$quality"
 
 # STATE 1: Dual Optimized Pipeline (Both parameters active - Temporal libplacebo then Hardware sr_amf)
 if ($scale -and $fps) {
-    # 1. Native low-res temporal frame generation using the merged shader file
-    $vfFilters += "libplacebo=w=${wOriginal}:h=${hOriginal}:fps=${fps}:frame_mixer=linear:custom_shader_path='${shaderFFmpeg}'"
-    # 2. Native hardware-accelerated AMD FSR upscale block to achieve maximum execution speed
-    $vfFilters += "sr_amf=w=${widthOut}:h=${heightOut}"
-    $sufixo += "_IFS_${fps}fps_FSR_${widthOut}x${heightOut}"
+	$vfFilters += "libplacebo=w=${widthOut}:h=${heightOut}:fps=${fps}:frame_mixer=linear:custom_shader_path='${shaderFFmpeg}'"
+	$sufixo += "_IFS_${fps}fps_FSR_${widthOut}x${heightOut}"
 }
 # STATE 2: Spatial Upscale Only (Scale parameter active, FPS inactive)
 # Uses hardware sr_amf directly for optimized standalone upscaling performance
