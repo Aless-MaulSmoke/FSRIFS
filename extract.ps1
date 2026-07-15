@@ -1,4 +1,31 @@
-﻿param(
+﻿# ==========================================================================
+# ------------------------------
+#
+#   FSRIFS Core Processing Engine (v1.1.0)
+#   Automated pipeline for video upscaling (FSR) and frame interpolation (IFS).
+#
+#   extract.ps1 (Powershell script)
+#   07/15/2026
+#   by Aless (MaulSmoke)
+#
+#   A modular script designed to orchestrate lightweight, hardware-accelerated 
+#   Vulkan workflows for video post-processing without heavy AI dependencies.
+#
+#  -file "string"
+#   The absolute or relative path to the input video file.
+#
+#  -time "string"
+#   the exact start time for frame extraction (hh:mm:ss).
+#
+#  -secs  number
+#   Number of seconds you wish to extract frames.
+#
+#  -output "string"
+#   Location of the folder to store extracted frames.
+#
+# ------------------------------
+
+param(
     [string]$file,
     [string]$time = "00:00:03",   # Desired start time
     [int]$secs = 1,               # Extraction duration

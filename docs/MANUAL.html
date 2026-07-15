@@ -39,7 +39,7 @@
             background-color: var(--container-bg);
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         h1 {
@@ -52,8 +52,8 @@
         }
 
         .subtitle {
-            font-size: 18px;
             color: #666;
+            font-size: 18px;
             margin-bottom: 30px;
             font-weight: 400;
         }
@@ -148,128 +148,161 @@
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
-	<div class="subtitle">PRACTICAL USER MANUAL</div>
-
+    <h1>FSRIFS (FSR + IFS) Upscale + Frame Interpolator</h1>
+    <div class="subtitle">PRACTICAL USER MANUAL</div>
+    
     <h2>Hardware Requirements & Dependencies</h2>
-    <p>For the post-processing pipeline to function correctly on your computer, your system must meet the following hardware and software requirements:</p>
+    <p>For the post-processing pipeline to work correctly on your computer, your system must meet the following hardware and software dependencies:</p>
     <ul>
-        <li><strong>Vulkan API Compatibility <span class="badge">Required</span>:</strong> Your graphics card must have native support for Vulkan technology. The custom IFS shader runs temporal calculations directly on the GPU silicon through this API. It works on dedicated graphics cards (AMD RX, Nvidia GTX/RTX) and also on recent integrated chips (AMD Vega or newer Intel HD Graphics). If your GPU does not support Vulkan, the process will not start.</li>
-        <li><strong>Processor (CPU):</strong> Any basic older 4 or 6-core processor (such as the AMD FX line or past generations of Intel Core) is perfectly capable of running the pipeline. Average CPU usage stays around 45%, keeping Windows completely free from freezes or overheating during rendering.</li>
-        <li><strong>Video Memory (VRAM):</strong> Legacy graphics cards with 2GB of VRAM can handle the task smoothly if the user operates wisely. It is recommended to close web browsers, Discord, and background games before starting the process at high resolutions (such as 2K or 4K) to avoid running out of video memory.</li>
-        <li><strong>Operating System:</strong> Windows 10 or Windows 11 (64-bit) with an active PowerShell terminal allowed to execute scripts.</li>
+        <li><strong>Vulkan API Compatibility <span class="badge">Required</span>:</strong> Your graphics card must have native support for Vulkan technology. It works on dedicated graphics cards (AMD RX, Nvidia GTX/RTX) as well as integrated chips (newer AMD Vega or Intel HD Graphics). If your GPU does not support Vulkan, the process will not start.</li>
+        <li><strong>Processor (CPU):</strong> Any basic 4 or 6-core processor (such as the AMD FX line or older generations of Intel Core) is perfectly capable of running the pipeline. Average CPU usage stays around 45%, keeping Windows completely free of stutters or overheating during rendering.</li>
+        <li><strong>Video Memory (VRAM):</strong> Legacy graphics cards with 2GB of VRAM will handle the workload smoothly if the user operates intelligently. It is recommended to close web browsers, Discord, and background games before starting the process at high resolutions (such as 2K or 4K) to avoid running out of card memory.</li>
+        <li><strong>Operating System:</strong> Windows 10 or Windows 11 64-bit with the execution of PowerShell scripts enabled on the system.</li>
     </ul>
 
     <div class="section-divider"></div>
 
     <h2>Installation</h2>
     <ol>
-        <li>Start by downloading the ZIP file containing the files.</li>
-        <li>Extract it wherever you prefer. You will see the entire folder structure of <code>FSRIFS</code>.</li>
-        <li>The whole process takes place inside a PowerShell prompt (knowing basic folder navigation commands is helpful).</li>
-        <li>Open PowerShell. You do not need to run it as administrator; the script does not require elevated privileges.</li>
+        <li>Start by downloading the zip file containing the pipeline.</li>
+        <li>Extract the content to your desired directory. You will see the entire folder structure of <code>FSRIFS</code>.</li>
+        <li>The entire process takes place inside a PowerShell prompt (knowing basic folder navigation commands is important).</li>
+        <li>Let's start by opening PowerShell; it does not need to be run as administrator since the script does not require elevated privileges to run.</li>
     </ol>
-    <p>If this is your first time running scripts on this computer, type the command below to allow script execution:</p>
-    <pre><code>Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process</code></pre>
+    <p>If this is your first time running scripts on your computer, type the command below to allow script execution:</p>
+    <pre><code>Set-ExecutionPolicy Bypass -Scope Process</code></pre>
     <p>Answer <strong>YES</strong> to apply the execution policy.</p>
 
     <div class="section-divider"></div>
 
-    <h2>How to Run</h2>
-    <p>Now you are ready to run the processes. You can do this in two ways:</p>
+    <h2>How to Execute</h2>
+    <p>Great! Now we are ready to run the processes, and you can do this in two ways:</p>
 
     <h3>Method 1: Drag & Drop</h3>
-    <p>This is the easiest way to execute the pipeline. It is tailored for users with no command prompt knowledge.</p>
+    <p>This is the easiest way to execute the pipeline. It is tailored for users with no terminal knowledge, allowing you to process an individual video or multiple pre-selected files inside a folder.</p>
     <ol>
-        <li>Using File Explorer, open the folder where you extracted <code>FSRIFS</code>. You will see a file named <code>DRAG_VIDEO_HERE.bat</code>.</li>
-        <li>Open another File Explorer window and go to the folder where the video you want to process is located.</li>
-        <li>Drag your video and drop it onto the <code>DRAG_VIDEO_HERE.bat</code> file.</li>
+        <li>Using your file explorer, navigate to the folder where you extracted <code>FSRIFS</code>. You will see a file named <code>DRAG_HERE.bat</code>.</li>
+        <li>Now open another file explorer window and go to the location of the file or folder you want to process.</li>
+        <li>Drag your video file or folder and drop it directly onto the <code>DRAG_HERE.bat</code> file.</li>
     </ol>
-    <p>You can configure this process by editing the file <code>DRAG_CONFIG.txt</code>:</p>
+    <p>You can configure the process by editing the <code>DRAG_CONFIG.txt</code> file:</p>
     <pre><code>[DRAG_SETTINGS]
+QUALITY=med
+FPS=60
+INTERPOLATE=oversample
 SCALE=1920x1080
 SHARPNESS=5
-FPS=60
-QUALITY=med
-VERBOSE=false</code></pre>
+VERBOSE=false
+SHUTDOWN=false</code></pre>
 
+    <div class="section-divider"></div>
     <h3>Method 2: PowerShell (Terminal)</h3>
-    <p>This is the original method to process your videos, requiring basic prompt knowledge.</p>
-    <p>You need to access the directory where you extracted <code>FSRIFS</code>. For example:</p>
+    <p>This is the original method to process your videos, requiring basic terminal knowledge.</p>
+    <p>We need to access the folder where you extracted FSRIFS. For example:</p>
     <pre><code>cd "D:\FSRIFS"</code></pre>
-    <p>Once inside the pipeline folder, you can execute two different scripts:</p>
+    <p>You will now be inside the pipeline folder and can execute two scripts. Let's get to know them:</p>
 
     <h3>1. <code>process.ps1</code></h3>
-    <p>Our main script, used to perform upscaling, generate frames, or both. The script is modular; you can access these modules using command-line arguments:</p>
+    <p>Our main script, used to perform upscaling and/or frame interpolation. The script works in a modular way; you can access these modules through command-line parameters:</p>
     <ul>
-        <li><code>-file "filename.mp4"</code>: The full path to the video file you want to process. It must be enclosed in quotation marks.</li>
-        <li><code>-scale factor|resolution</code>: The final target dimension of the video. If omitted, upscaling will not occur, and the original size is kept. The value can be entered as:
+        <li><code>-file "filename.mp4"</code>: The full path of the video file you want to process. It must be wrapped in quotation marks.</li>
+        <li><code>-scale factor|resolution</code>: Final video dimensions. If omitted, upscaling will not occur and the original size is maintained. The value can be provided in the following formats:
             <ul>
-                <li>A multiplier factor for resolution gain using decimal numbers (e.g., the scaling factor from a 720p video to 1080p is <code>1.5</code>).</li>
-                <li>A literal resolution target, for example: <code>"1920x1080"</code>.</li>
+                <li>Multiplier factor for resolution gain. Use decimal numbers (e.g., the scaling factor from a 720p video to 1080p is <code>1.5</code>).</li>
+                <li>Literal resolution where you can specify, for example:</li>
+                <li>"1280x720" = 720p (HD)</li>
+                <li>"1920x1080" = 1080p (Full HD)</li>
+                <li>"2560x1440" = 2K (Quad HD / QHD)</li>
+                <li>"3840x2160" = 4K (Ultra HD / UHD)</li>
             </ul>
         </li>
-        <li><code>-fps number</code>: The desired frame rate for fluid motion (e.g., 60). If omitted, frame generation will not occur, and the original FPS is kept.</li>
-        <li><code>-quality "low|med|big"</code>: The profile for weight, compression, and final file size. If omitted, the system defaults to the balanced <code>"med"</code> profile. The options are:
+        <li><code>-fps number</code>: The desired frame rate for smoothness (e.g., 60). If omitted, frame generation will not occur and the original FPS is maintained.</li>
+        <li><code>-interpolate "none|oversample|mitchell_clamp|linear"</code>: Controls video movement smoothness. If you change the FPS (for example, from 30 to 60), this setting determines how the new frames are generated. The default is <code>"none"</code>:
             <ul>
-                <li><code>low</code>: Focuses on drastic space savings. It reduces the final file size and lightens VRAM usage, generating a small file.</li>
-                <li><code>med</code>: The ideal sweet spot. It maintains edge sharpness and visual fidelity without overloading storage, generating a medium-sized file.</li>
-                <li><code>big</code>: Maximum visual fidelity and high bitrate, meant for archiving or high-quality uploads. It generates a huge final file.</li>
+                <li><code>none</code>: Disables temporal mixing. Uses pure frame duplication (Nearest Neighbor). Provides maximum GPU performance savings and ensures clean, sharp gaming visuals with absolutely zero ghosting or motion blur.</li>
+                <li><code>oversample</code>: Enables "Smooth Motion" sampling. Blends frames only when an output frame falls precisely between two source frames. Highly recommended for preserving the original, natural subjective appearance of the video.</li>
+                <li><code>mitchell_clamp</code>: Utilizes a larger, high-quality filter kernel to smoothly interpolate frames. Designed to eliminate ringing and visual artifacts as much as possible. Best option for maximum fluid smoothness (requires modern GPU/RTX hardware).</li>
+                <li><code>linear</code>: Applies a standard linear blend/fade between frames. Extremely lightweight temporal processing, ideal for smooth pacing on older hardware configurations.</li>
             </ul>
         </li>
-        <li><code>-sharpness number</code>: The sharpness level applied by FSR, ranging from <code>0</code> (minimum) to <code>10</code> (maximum).</li>
-        <li><code>-v</code>: Verbose mode, which lists detailed information about the ongoing process in the terminal.</li>
+        <li><code>-quality "low|med|big"</code>: The profile for final file weight, compression, and size. If you omit this parameter, the system will automatically assume the balanced profile <code>"med"</code>. The available options are:
+            <ul>
+                <li><code>low</code>: Focuses on drastic space saving. Reduces the final file size and eases VRAM load. Generates a small final file.</li>
+                <li><code>med</code>: The ideal sweet spot. Maintains edge sharpness and visual fidelity without blowing up your hard drive storage. Generates a medium-sized final file.</li>
+                <li><code>big</code>: Maximum visual fidelity and high bitrate, aimed at archiving or high-quality uploads. Generates a huge final file.</li>
+            </ul>
+        </li>
+        <li><code>-sharpness number</code>: Edge crispness applied by FSR, ranging from <code>0</code> (minimum) to <code>10</code> (maximum). Default is 5.</li>
+        <li><code>-verbose "false|true"</code>: Verbose mode, where detailed information about the processing is printed in the terminal by FFmpeg.
+            <ul>
+                <li><code>false</code>: Displays basic processing data.</li>
+                <li><code>true</code>: Displays detailed and elaborate processing data.</li>
+            </ul>
+        </li>
+        <li><code>-shutdown "false|true"</code>: Controls system power state upon completion. The options are:
+            <ul>
+                <li><code>false</code>: Normal execution behavior. Keeps the computer running.</li>
+                <li><code>true</code>: Displays a 30-second countdown on the screen. The user can press [ENTER] to turn off immediately, or [ESC] to cancel and keep the PC running.</li>
+            </ul>
+        </li>
     </ul>
 
     <div class="note">
-        <strong>Safety Note:</strong> The script requires you to use at least <code>-scale</code> or <code>-fps</code>.
+        <strong>Safety Note:</strong> The script requires you to use at least the <code>-scale</code> or the <code>-fps</code> parameter.
     </div>
 
     <h4>Command Examples:</h4>
-    <p><strong>Upscale ONLY (720p to 1080p with medium sharpness, using a 1.5x scale and sharpness 5):</strong></p>
+    <p><strong>Perform ONLY Upscaling (e.g., from 720p to 1080p, with medium sharpness 5):</strong></p>
     <pre><code>.\process.ps1 -file "C:\path\video.mp4" -scale 1.5 -sharpness 5</code></pre>
 
-    <p><strong>Frame Generation ONLY (e.g., if your original video is 30fps):</strong></p>
+    <p><strong>Perform ONLY Frame Generation (e.g., your original video is 30fps and you want 60 FPS):</strong></p>
     <pre><code>.\process.ps1 -file "C:\path\video.mp4" -fps 60</code></pre>
 
-    <p><strong>Full Pipeline (1080p Upscale + 60 FPS frame generation + checking a detailed log in the prompt):</strong></p>
-    <pre><code>.\process.ps1 -file "C:\path\video.mp4" -scale "1920x1080" -fps 60 -v</code></pre>
+    <p><strong>Full Pipeline (Upscale to 1080p + 60 FPS frame generation + checking a detailed log in the prompt):</strong></p>
+    <pre><code>.\process.ps1 -file "C:\path\video.mp4" -scale "1920x1080" -fps 60 -verbose true</code></pre>
 
     <h4>Output File Naming</h4>
-    <p>The script identifies the source file and saves the final result directly into the same folder as the original video. The new file name is intelligently generated with suffixes based on your choices:</p>
+    <p>The script automatically identifies the origin of your file and saves the final result exactly in the same folder as the input video. The name of the new file is generated intelligently with suffixes based on what you chose to do:</p>
     <ul>
-        <li>If you only used upscale: <code>video_FSR_1080x720.mp4</code>.</li>
-        <li>If you only used frames: <code>video_60fps.mp4</code>.</li>
-        <li>If you used the full pipeline: <code>video_FSR_1080x720_60fps.mp4</code>.</li>
+        <li>If only upscaling was processed: <code>video_FSR_1920x1080.mp4</code></li>
+        <li>If only frame interpolation was processed: <code>video_IFS_60fpsLINEAR.mp4</code></li>
+        <li>If the complete pipeline was processed: <code>video_FSR_1920x1080_IFS_60fpsLINEAR.mp4</code></li>
     </ul>
 
     <h3>2. <code>extract.ps1</code></h3>
-    <p>A script to extract specific frames from the processed video so you can evaluate the quality frame-by-frame. You can extract all frames across a specific number of seconds starting at a chosen timestamp.</p>
-    <p>Command-line arguments:</p>
+    <p>Script to extract a few frames from the processed video so you can evaluate the result frame by frame. You can extract all frames from X seconds starting at a specific timestamp in the video. It is the ideal tool to visually check the final quality, allowing precise inspection.</p>
+    <p>Command-line parameters:</p>
     <ul>
-        <li><code>-file "path"</code>: The full path to the video file. Must be enclosed in quotation marks.</li>
-        <li><code>-time "hh:mm:ss"</code>: The starting point for extraction. If left blank, it defaults to 3 seconds (<code>00:00:03</code>).</li>
-        <li><code>-secs number</code>: How many seconds of video to turn into photos. If left blank, it extracts exactly 1 second (if the video is at 60fps, it will extract 60 frames).</li>
-        <li><code>-output "destination_folder"</code>: Target folder to save the photos (enclosed in double quotes). If left blank, frames are extracted into the <code>output</code> folder inside the FSRIFS root directory.</li>
+        <li><code>-file "filename.mp4"</code>: The full path of the video file you want to process. It must be wrapped in quotation marks.</li>
+        <li><code>-time "hh:mm:ss"</code>: The starting point for extraction. If left blank, it will automatically start at 3 seconds (<code>00:00:03</code>).</li>
+        <li><code>-secs number</code>: How many seconds of video you want to convert into images. If left blank, it will extract just 1 second (if the video is at 60fps, then 60 frames will be extracted).</li>
+        <li><code>-output "destination_path"</code>: The folder where images will be saved (wrapped in double quotes). If left blank, the script will extract the frames inside the <code>output</code> folder at the root of FSRIFS.</li>
     </ul>
 
-    <h2>Known Issues & Technical Limitations</h2>
-    <h3>Blurry or Softened Static Frames (Freeze Frame Artifacts)</h3>
+    <h2>Known Limitations & Technical Artifacts</h2>
+    <h3>Blurring or Smoothing When Paused (Freeze Frame Artifacts)</h3>
     <ul>
-        <li><strong>Symptom:</strong> When pausing the final video during fast-moving scenes, the image may look soft, blurry, or display a "ghosting" effect.</li>
-        <li><strong>Cause:</strong> The video player froze the playback clock exactly on an intermediate (interpolated) frame generated by the temporal calculations of the IFS shader.</li>
-        <li><strong>Solution:</strong> There is nothing to fix. This behavior is a technical necessity to guarantee fluid motion when the video is playing without requiring heavy AI or hardware with Tensor Cores. It is the trade-off for a solution designed for low-end PCs.</li>
+        <li><strong>Symptom:</strong> When pausing the final video during fast-motion scenes, the image may appear soft, blurry, or show a "ghosting" effect.</li>
+        <li><strong>Cause:</strong> The video player froze the playback clock exactly on an intermediate (interpolated) frame generated by the mathematical temporal interpolation engine.</li>
+        <li><strong>Solution:</strong> There is nothing to fix. This behavior is the exact mechanism required to guarantee the illusion of smoothness in frame generation without requiring heavy AI or hardware with Tensor Cores. It is the trade-off for a solution targeted at low-end PCs.</li>
     </ul>
 
-    <h2>Credits & Technical Support</h2>
+    <h2>Credits and License Attributions</h2>
+    <p>This ecosystem integrates and distributes a fully modular post-processing pipeline, composed of consolidated open-source software combined with a layer of custom automated logic. Listed below are the individual rights and licenses for each component:</p>
+    
     <ul>
-        <li><strong>Conceptualization, Custom IFS Shader Authoring (MIT), and Pipeline Integration:</strong> Aless(MaulSmoke).</li>
-        <li><strong>Third-Party Technologies Used:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
-        <li><strong>Official Project Channel (YouTube):</strong> Watch tutorials, updates, performance showcases, and ask questions directly within the channel community: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">YouTube Channel</a>.</li>
+        <li><strong>Core Component (FFmpeg):</strong> Version N-125258-gdf94900c98-20260624. Applicable license: <em>GNU Lesser General Public License (LGPL v2.1 or later)</em> or <em>GNU General Public License (GPL v2.0 or later)</em>.</li>
+        <li><strong>Vulkan Rendering & IFS Library (libplacebo):</strong> Embedded natively within the main FFmpeg binary listed above. Applicable license: <em>GNU Lesser General Public License (LGPL v2.1 or later)</em>.</li>
+        <li><strong>Spatial Scaling Algorithm (FidelityFX FSR):</strong> Version v1.0.2. Developed and registered by Advanced Micro Devices, Inc. (AMD). Applicable license: <em>MIT License (highly permissive open-source license)</em>, ported to GLSL by agyild.</li>
+        <li><strong>Pipeline Integration Scripts:</strong> Developed by Aless (MaulSmoke). Applicable license: <em>MIT License (open-source and free to use)</em>.</li>
+    </ul>
+
+    <h2>Social Channels:</h2>
+    <ul>
+        <li><strong>Official Project Channel (YouTube):</strong> Watch tutorials, news, performance showcases, and ask questions directly within the channel's community: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">YouTube Channel</a>.</li>
+        <li><strong>Official Project Channel (Reddit):</strong> Comment, share your experience, and ask questions directly within the community: <a href="https://www.reddit.com/r/FSRIFS/" target="_blank">Reddit Community</a>.</li>
     </ul>
 </div>
-
 </body>
 </html>

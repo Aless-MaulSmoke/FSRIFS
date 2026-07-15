@@ -1,0 +1,96 @@
+[DRAG_SETTINGS]
+QUALITY=med
+FPS=60
+INTERPOLATE=oversample
+SCALE=1920x1080
+SHARPNESS=5
+VERBOSE=false
+SHUTDOWN=false
+
+
+# =====================================================================
+#             DOCUMENTATION & REFERENCE MANUAL (Read Only)
+# =====================================================================
+#
+#  QUALITY:
+#  --------------------------------------------------------------------
+#  Controls compression, file weight, and VRAM usage profile.
+#  low  - Drastic space saving. Smallest file size. Eases VRAM load.
+#  med  - Balanced. Keeps edge sharpness without blowing up size.
+#  big  - Maximum visual fidelity. Very high bitrate. Huge file.
+#
+#
+#  FPS:
+#  --------------------------------------------------------------------
+#  Target frame rate for movement fluidity (e.g., 60).
+#  *Bypass active: Automatically skipped if same as source video.
+#
+#
+#  INTERPOLATE:
+#  --------------------------------------------------------------------
+#  Controls how smooth video movement looks. If you change your FPS 
+#  (e.g. 30 to 60), this setting decides how new frames are generated. 
+#  Default is "none".
+#
+#  none
+#    Disables temporal mixing. Uses pure frame duplication (Nearest 
+#    Neighbor). Provides maximum GPU performance savings and ensures 
+#    clean, sharp gaming visuals with absolutely zero ghosting or 
+#    motion blur.
+#
+#  oversample
+#    Enables "Smooth Motion" sampling. Blends frames only when an 
+#    output frame falls precisely between two source frames. Highly 
+#    recommended for preserving the original, natural subjective 
+#    appearance of the video.
+#
+#  mitchell_clamp
+#    Utilizes a larger, high-quality filter kernel to smoothly 
+#    interpolate frames. Designed to eliminate ringing and visual 
+#    artifacts as much as possible. Best option for maximum fluid 
+#    smoothness (requires modern GPU/RTX hardware).
+#
+#  linear
+#    Applies a standard linear blend/fade between frames. Extremely 
+#    lightweight temporal processing, ideal for smooth pacing on older 
+#    hardware configurations.
+#
+#
+#  SCALE:
+#  --------------------------------------------------------------------
+#  Output resolution size. Literal (2560x1440) or Multiplier (1.5)
+#  *Bypass active: Automatically skipped if same as source video.
+#
+#  - RESOLUTION CHEAT SHEET
+#  720p  = 1280x720   (HD)
+#  1080p = 1920x1080  (Full HD)
+#  2K    = 2560x1440  (Quad HD / QHD)
+#  4K    = 3840x2160  (Ultra HD / UHD)
+#
+#  - MULTIPLIER FACTOR ALTERNATIVE
+#  Instead of resolution, you can use decimal numbers for SCALE.
+#  Example: 1.5 (scales a 720p video up to 1080p).
+#
+#
+#  SHARPNESS:
+#  --------------------------------------------------------------------
+#  Controls the edge crispness applied by AMD FidelityFX FSR.
+#  Range: 0 (minimum/blurry) to 10 (maximum/very sharp). Default: 5.
+#  *Bypass active: Automatically disabled if no upscale happens.
+#
+#
+#  VERBOSE:
+#  --------------------------------------------------------------------
+#  Toggles detailed rendering logs inside the terminal window.
+#  true  - Shows detailed real-time processing information.
+#  false - Keeps the screen clean, showing only essential messages.
+#
+#  SHUTDOWN:
+#  --------------------------------------------------------------------
+#  Triggers a controlled system shutdown once the execution ends.
+#  true  - Displays a 30s screen countdown. User can press:
+#          [ENTER] to turn off instantly, or 
+#          [ESC]   to abort and keep PC on.
+#  false - Normal execution behavior. Keeps the computer running.
+#
+# =====================================================================

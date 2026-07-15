@@ -150,13 +150,13 @@
 <body>
 
 <div class="container">
-    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
+    <h1>FSRIFS (FSR + IFS) Upscale + Interpolador de frames</h1>
     <div class="subtitle">MANUAL DE UTILIZAÇÃO PRÁTICA</div>
 
     <h2>Requisitos e Dependências de Hardware</h2>
     <p>Para que a pipeline de pós-processamento funcione corretamente no seu computador, o seu sistema precisa cumprir as seguintes dependências físicas e de software:</p>
     <ul>
-        <li><strong>Compatibilidade com API Vulkan <span class="badge">Obrigatório</span>:</strong> A sua placa de vídeo precisa ter suporte nativo à tecnologia Vulkan. O shader autoral IFS roda os cálculos temporais diretamente no silício da GPU através dessa API. Funciona em placas de vídeo dedicadas (AMD RX, Nvidia GTX/RTX) e também em chips integrados (AMD Vega ou Intel HD Graphics mais recentes). Se a sua GPU não tiver suporte a Vulkan, o processo não iniciará.</li>
+        <li><strong>Compatibilidade com API Vulkan <span class="badge">Obrigatório</span>:</strong> A sua placa de vídeo precisa ter suporte nativo à tecnologia Vulkan. Funciona em placas de vídeo dedicadas (AMD RX, Nvidia GTX/RTX) e também em chips integrados (AMD Vega ou Intel HD Graphics mais recentes). Se a sua GPU não tiver suporte a Vulkan, o processo não iniciará.</li>
         <li><strong>Processador (CPU):</strong> Qualquer processador básico de 4 ou 6 núcleos antigos (como a linha AMD FX ou Intel Core de gerações passadas) é perfeitamente capaz de rodar a pipeline. O uso médio de CPU fica na casa dos 45%, mantendo o Windows totalmente livre de travamentos ou superaquecimento durante a renderização.</li>
         <li><strong>Memória de Vídeo (VRAM):</strong> Placas de vídeo legadas com 2GB de VRAM dão conta do recado tranquilamente se o usuário operar com inteligência. Recomenda-se fechar navegadores de internet, Discord e jogos em segundo plano antes de iniciar o processo em resoluções altas (como 2K ou 4K) to evitar estouro de memória da placa.</li>
         <li><strong>Sistema Operacional:</strong> Windows 10 ou Windows 11 de 64-bits com o terminal PowerShell ativo e liberado para execução de scripts.</li>
@@ -181,19 +181,22 @@
     <p>Ok! Agora estamos prontos para rodar os processos e você pode fazer isso de duas maneiras:</p>
 
     <h3>Método 1: Drag & Drop</h3>
-    <p>Essa é a forma mais fácil de executar a pipeline. Voltado para usuários sem conhecimento em prompt.</p>
+    <p>Essa é a forma mais fácil de executar a pipeline. Voltado para usuários sem conhecimento em prompt. Onde você pode processar um vídeo individualmente ou vários arquivos pré selecionados dentro de uma pasta.</p>
     <ol>
-        <li>Usando o explorador de arquivos, acesse a sua pasta onde descompactou o <code>FSRIFS</code>, vc verá um arquivo chamado <code>DRAG_VIDEO_HERE.bat</code>.</li>
-        <li>Agora abra outra janela de explorador de arquivos e vá até a pasta onde tem o vídeo que você deseja processar.</li>
-        <li>Arraste o seu vídeo e solte sobre o arquivo que mencionamos.</li>
+        <li>Usando o explorador de arquivos, acesse a sua pasta onde descompactou o <code>FSRIFS</code>, vc verá um arquivo chamado <code>DRAG__HERE.bat</code>.</li>
+        <li>Agora abra outra janela de explorador de arquivos e vá até o local onde esta localizado o arquivo ou pasta que você deseja processar.</li>
+        <li>Arraste o seu vídeo ou pasta e solte sobre o arquivo DRAG_HERE.</li>
     </ol>
     <p>Você pode configurar o processo editando o arquivo <code>DRAG_CONFIG.txt</code>:</p>
     <pre><code>[DRAG_SETTINGS]
+QUALITY=med
+FPS=60
+INTERPOLATE=oversample
 SCALE=1920x1080
 SHARPNESS=5
-FPS=60
-QUALITY=med
-VERBOSE=false</code></pre>
+VERBOSE=false
+SHUTDOWN=false
+	</code></pre>
 
     <h3>Método 2: PowerShell (Terminal)</h3>
     <p>Esse é o método original para você processar seus vídeos, necessário conhecimento de prompt.</p>
@@ -202,16 +205,31 @@ VERBOSE=false</code></pre>
     <p>Você estará assim na pasta da pipeline e poderá executar dois scripts:</p>
 
     <h3>1. <code>process.ps1</code></h3>
-    <p>Nosso script principal com ele podemos fazer upscale e ou gerar fps. O script atua de forma modular, você pode acessar esses módulos através de parâmetros na linha de comando, vamos conhecer eles:</p>
+    <p>Nosso script principal, com ele podemos fazer upscaling e ou frame interpolation. O script atua de forma modular, você pode acessar esses módulos através de parâmetros na linha de comando, vamos conhecer eles:</p>
     <ul>
         <li><code>-file "nome_do_arquivo.mp4"</code>: O caminho completo do arquivo de vídeo que você deseja processar. Deve ser colocado entre aspas.</li>
         <li><code>-scale fator|resolução</code>: Dimensão final do vídeo. Se omitido, o upscale não acontece e o tamanho original é mantido. O valor pode ser informado nos formatos:
             <ul>
                 <li>fator multiplicador para o ganho de resolução. Use números decimais (ex: o fator de dimensão de um vídeo de 720p para 1080p é <code>1.5</code>).</li>
-                <li>resolução literal onde vc pode informar por exemplo: <code>"1920x1080"</code>.</li>
+				<li>resolução literal onde vc pode informar por exemplo:
+					<ul>
+						<li><code>"1280x720"</code>  = 720p (HD)</li>
+						<li><code>"1920x1080"</code> = 1080p (Full HD)</li>
+						<li><code>"2560x1440"</code> = 2K (Quad HD / QHD)</li>
+						<li><code>"3840x2160"</code> = 4K (Ultra HD / UHD)</li>
+					</ul>
+				</li>
             </ul>
         </li>
         <li><code>-fps número</code>: A taxa de quadros desejada para a fluidez (ex: 60). Se omitido, a geração de quadros não acontece e os FPS originais são mantidos.</li>
+        <li><code>-interpolate "none|oversample|mitchell_clamp|linear"</code>: Controla a suavidade do movimento do vídeo. Se você alterar o FPS (por exemplo, de 30 para 60), esta configuração determina como os novos quadros são gerados. O padrão é <code>"none"</code>:
+            <ul>
+                <li><code>none</code>: Desativa a mesclagem temporal. Utiliza a duplicação pura de quadros (Vizinho Mais Próximo). Proporciona a máxima economia de desempenho da GPU e garante visuais de jogo nítidos e limpos, sem absolutamente nenhum efeito de *ghosting* ou *motion blur*).</li>
+                <li><code>oversample</code>: Ativa a amostragem "Smooth Motion". Combina quadros apenas quando um quadro de saída cai exatamente entre dois quadros de origem. Altamente recomendado para preservar a aparência subjetiva original e natural do vídeo.</li>
+                <li><code>mitchell_clamp</code>: Utiliza filtro mais pesado e de alta qualidade para interpolar quadros de forma suave. Projetado para eliminar ao máximo o efeito *ringing* e artefatos visuais. A melhor opção para máxima fluidez (requer hardware moderno com GPU/RTX).</li>
+                <li><code>linear</code>: Aplica uma mesclagem/transição com sobreposição linear inteligente entre quadros. Processamento extremamente leve, ideal para um ritmo suave em configurações de hardware mais antigas.</li>
+            </ul>
+        </li>
         <li><code>-quality "low|med|big"</code>: O perfil de peso, compressão e tamanho do arquivo final. Se você omitir este parâmetro, o sistema assumirá automaticamente o perfil equilibrado <code>"med"</code>. As opções disponíveis são:
             <ul>
                 <li><code>low</code>: Foco em economia drástica de espaço. Reduz o peso do arquivo final e alivia o uso de VRAM. Gera um arquivo final pequeno.</li>
@@ -220,7 +238,18 @@ VERBOSE=false</code></pre>
             </ul>
         </li>
         <li><code>-sharpness número</code>: Qualidade aplicada pelo FSR indo de <code>0</code> (mínimo) até <code>10</code> (máximo).</li>
-        <li><code>-v</code>: Modo verbose, onde informações detalhadas sobre o processo são listadas no terminal.</li>
+        <li><code>-v</code>: Modo verbose, onde informações detalhadas sobre o processo são listadas no terminal pelo FFmpeg.
+            <ul>
+                <li><code>false</code>: Exibe dados básicos de processamento.</li>
+                <li><code>true</code>: Exibe dados detalhados e elaborados de processamento.</li>
+            </ul>
+		</li>
+        <li><code>-shutdown "false|true"</code>: O perfil de peso, compressão e tamanho do arquivo final. Se você omitir este parâmetro, o sistema assumirá automaticamente o perfil equilibrado <code>"med"</code>. As opções disponíveis são:
+            <ul>
+                <li><code>false</code>: Comportamento de execução normal. Mantém o computador em funcionamento.</li>
+                <li><code>true</code>: Exibe uma contagem regressiva de 30 segundos na tela. O usuário pode pressionar: [ENTER] para desligar imediatamente, ou [ESC] para cancelar e manter o PC ligado.</li>
+            </ul>
+        </li>
     </ul>
 
     <div class="note">
@@ -240,9 +269,9 @@ VERBOSE=false</code></pre>
     <h4>Nomenclatura dos Arquivos de Saída</h4>
     <p>O script irá identificar a origem do seu arquivo e salva o resultado final exatamente na mesma pasta do vídeo original. O nome do novo arquivo é gerado de forma inteligente com sufixos baseados no que você escolheu fazer:</p>
     <ul>
-        <li>Se usou apenas o upscale: <code>video_FSR_1080x720.mp4</code>.</li>
-        <li>Se usou apenas os frames: <code>video_60fps.mp4</code>.</li>
-        <li>Se usou a pipeline completa: <code>video_FSR_1080x720_60fps.mp4</code>.</li>
+        <li>Se processou apenas o upscaling: <code>video_FSR_1080x720.mp4</code>.</li>
+        <li>Se processou apenas o frame interpolated: <code>video_IFS_60fpsLINEAR.mp4</code>.</li>
+        <li>Se processou a pipeline completa: <code>video_FSR_1080x720_IFS_60fpsLINEAR.mp4</code>.</li>
     </ul>
 
     <h3>2. <code>extract.ps1</code></h3>
@@ -259,15 +288,23 @@ VERBOSE=false</code></pre>
     <h3>Borrão ou Suavização ao Pausar (Freeze Frame Artifacts)</h3>
     <ul>
         <li><strong>Sintoma:</strong> Ao pausar o vídeo final durante cenas de movimentação rápida, a imagem pode parecer suave, borrada ou apresentar um efeito de "fantasma".</li>
-        <li><strong>Causa:</strong> O player de vídeo congelou o relógio de reprodução exatamente em cima de um quadro intermediário (interpolado) gerado pela matemática temporal do shader IFS.</li>
+        <li><strong>Causa:</strong> O player de vídeo congelou o relógio de reprodução exatamente em cima de um quadro intermediário (interpolado) gerado pela matemática de interpolação.</li>
         <li><strong>Solução:</strong> Não há o que corrigir. Esse comportamento é a mecânica necessária para garantir a ilusão de fluidez na geração de frames com o vídeo em movimento, sem exigir IA pesada ou hardware com Tensor Cores. É o preço que se paga para uma solução voltada a low-end PC.</li>
     </ul>
 
-    <h2>Créditos e Suporte Técnico</h2>
+    <h2>Créditos e Atribuições de Licença</h2>
+    <p>Este ecossistema integra e distribui uma pipeline de pós-processamento totalmente modular, composta por softwares consolidados de código aberto combinados a uma camada de lógica autoral. Abaixo estão listados os direitos e licenças individuais de cada componente:</p>
     <ul>
-        <li><strong>Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline:</strong> por Aless(MaulSmoke).</li>
-        <li><strong>Tecnologias de Terceiros Utilizadas:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
+        <li><strong>Componente Core (FFmpeg):</strong> Versão N-125258-gdf94900c98-20260624. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em> ou <em>GNU General Public License (GPL v2.0 ou posterior)</em>.</li>
+        <li><strong>Biblioteca de Renderização Vulkan e IFS (libplacebo):</strong> Compilação embarcada nativamente no binário principal do FFmpeg listado acima. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em>.</li>
+        <li><strong>Algoritmo de Escala Espacial (FidelityFX FSR):</strong> Versão v1.0.2. Desenvolvido e registrado por Advanced Micro Devices, Inc. (AMD). Licença aplicável: <em>Licença MIT (Open-Source e amplamente permissiva) portado para glsl por agyild</em>.</li>
+        <li><strong>Scripts de integração da pipeline:</strong> Desenvolvido por Aless (MaulSmoke). Licença aplicável: <em>Licença MIT (Open-Source e de uso livre)</em>.</li>
+    </ul>
+
+    <h2>Canais Sociais:</h2>
+    <ul>
         <li><strong>Canal Oficial do Projeto (YouTube):</strong> Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">Canal do YouTube</a>.</li>
+		<li><strong>Canal Oficial do Projeto (reddit):</strong> Comente, compartilhe sua experiência, tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.reddit.com/r/FSRIFS/" target="_blank">Comunidade reddit</a>.</li>
     </ul>
 </div>
 

@@ -1,53 +1,55 @@
 ================================================================================
-                        CREDITS AND LICENSE ATTRIBUTIONS
+                        CREDITS & LICENSE ATTRIBUTIONS
 ================================================================================
 
-FSRIFS v1.0.1 by Aless (MaulSmoke)
+FSRIFS v1.1.0 by Aless (MaulSmoke)
 
 This standalone package distributes a modular post-processing pipeline composed 
-of established open-source tools integrated with custom authorial logic. 
-The individual copyrights and licenses for each component are detailed below:
+of open-source tools integrated with custom, authorial automation logic. 
+Listed below are the copyrights and licenses for each individual component:
 
 --------------------------------------------------------------------------------
 1. CORE COMPONENT: FFmpeg (Specific Custom Build)
 --------------------------------------------------------------------------------
-* Version Used: ffmpeg version N-125258-gdf94900c98-20260624 (v8.x Ecosystem)
+* Version Used: ffmpeg version N-125258-gdf94900c98-20260624 (Ecos. v8.x)
 * Copyright: Copyright (c) 2000-2026 the FFmpeg developers
 * Applicable License: GNU General Public License (GPL v2.0 or later)
-* Details: The original source code belongs entirely to the FFmpeg community. 
-  Due to the static linking of advanced graphics libraries, this distributed 
-  binary operates under the strict terms of the GPL license.
-* SAFETY NOTE: This specific binary was extracted and compiled with native, 
-  stable support for 'libplacebo'. DO NOT replace or update this executable file 
-  with generic versions, or the FSRIFS pipeline will immediately stop working.
+* Details: The original source code belongs to the FFmpeg community. Due to the 
+  static linking of graphics libraries, this specific binary operates under GPL.
+* SAFETY NOTE: This binary was compiled specifically with native and stable 
+  support for 'libplacebo'. DO NOT replace or update this executable file with 
+  generic versions, or the FSRIFS pipeline will stop working.
 
 --------------------------------------------------------------------------------
-2. RENDERING LIBRARY: libplacebo
+2. RENDERING & INTERPOLATION LIBRARY (IFS): libplacebo
 --------------------------------------------------------------------------------
-* Version Used: Compilation embedded natively within the main FFmpeg core binary.
+* Version Used: Native compilation embedded within the core FFmpeg binary above.
+* Copyright: Copyright (c) 2016-2026 Niklas Haas and libplacebo contributors
 * Applicable License: GNU Lesser General Public License (LGPL v2.1 or later).
-* Details: Used to establish the low-level bridge via the Vulkan API on the GPU, 
-  enabling synchronous shader injection into the video stream pipeline.
+* Details: Used to bridge low-level processing via the Vulkan API on the GPU 
+  and enable synchronous shader injection. It acts as the actual hardware engine 
+  responsible for powering the IFS (Interpolated Frame Sampling) concept through 
+  its native frame blending and temporal sampling algorithms.
 
 --------------------------------------------------------------------------------
 3. SPATIAL SCALING ALGORITHM: AMD FidelityFX™ Super Resolution (FSR)
 --------------------------------------------------------------------------------
 * Version Used: FSR v1.0.2
 * Developed by: AMD (Advanced Micro Devices, Inc.)
-* Applicable License: MIT License (Open-Source, permissive).
-* Details: Technology integrated into the shader's logical block for physical 
-  edge reconstruction and high-fidelity upscaling without utilizing any AI.
+* Applicable License: MIT License (highly permissive open-source license).
+* Details: Technology integrated into the shader logic block (GLSL port by agyild) 
+  for physical edge reconstruction and high-fidelity resizing without using AI.
 
 --------------------------------------------------------------------------------
-4. TEMPORAL CONTROL ALGORITHM: INTERSECTION FLUID SHARPEN (IFS)
+4. PIPELINE INTEGRATION SCRIPTS: FSRIFS
 --------------------------------------------------------------------------------
-* Version Used: IFS v1.0
+* Version Used: v1.1.0 (Modular Architecture)
 * Developed by: Aless (MaulSmoke)
-* Applicable License: MIT License (Open-Source, permissive).
-* Details: Custom authorial shader responsible for generating the dynamic 
-  motion mask and structural shielding for static elements (HUD/Fonts).
+* Applicable License: MIT License (free and permissive open-source license).
+* Details: Custom authorial automation logic responsible for orchestrating the 
+  entire pipeline, modular execution, DRAG & DROP functionality, and frame extraction.
 
 ================================================================================
-Disclaimer: All third-party trademarks, logos, and software tools mentioned in 
-this document are the exclusive property of their respective authors and corporations.
+Disclaimer: All trademarks, logos, and third-party tools mentioned in this 
+document are the exclusive property of their respective authors and corporations.
 ================================================================================

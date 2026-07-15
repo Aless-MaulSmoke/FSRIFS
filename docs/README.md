@@ -1,6 +1,6 @@
-# 📖 FSRIFS Documentation: Concept & Practical Guide
+# 📖 FSRIFS v1.1.0 Documentation: Concept & Practical Guide
 
-Welcome to the official documentation for **FSRIFS**, a lightweight video post-processing pipeline designed specifically for low-end and legacy hardware.
+Welcome to the official documentation for **FSRIFS** (FidelityFX Super Resolution + Interpolate Fluid Sampling), a lightweight video post-processing pipeline designed specifically for low-end and legacy hardware.
 
 ---
 
@@ -53,8 +53,10 @@ Once your PowerShell environment is ready, you can process your videos using two
 Tailored for users who have no experience with terminal commands.
 
 1. Open your file explorer and navigate to your extracted `FSRIFS` folder.
-2. Locate the file named `DRAG_VIDEO_HERE.bat`.
-3. Open another file explorer window, navigate to your target video file, then drag and drop your video file directly on top of the `.bat` file.
+2. Locate the file named `DRAG_HERE.bat`.
+3. Open another file explorer window and choose your input:
+   * **Single File:** Drag and drop your video file directly on top of the `DRAG_HERE` file to process it alone.
+   * **Full Folder:** Drag and drop a folder containing multiple videos on top of the `DRAG_HERE` file to process all files in batch mode automatically.
 
 #### Customizing Drag & Drop Settings
 You can modify the default processing behavior by opening and editing the `DRAG_CONFIG.txt` configuration file:
@@ -64,8 +66,10 @@ You can modify the default processing behavior by opening and editing the `DRAG_
 SCALE=1920x1080
 SHARPNESS=5
 FPS=60
+INTERPOLATE=oversample
 QUALITY=med
 VERBOSE=false
+SHUTDOWN=false
 ```
 
 ---
@@ -85,12 +89,14 @@ This is the main modular script used for upscaling and frame interpolation. You 
 * `-file "path\video.mp4"`: The absolute path to your source video (must be enclosed in quotation marks).
 * `-scale factor|resolution`: Target dimension. Can be a decimal multiplier (e.g., `1.5` scales 720p to 1080p) or a literal resolution (e.g., `"1920x1080"`). If omitted, upscaling is skipped.
 * `-fps [number]`: Target framerate (e.g., `60`). If omitted, frame generation is skipped.
+* `-interpolate "none|oversample|mitchell_clamp|linear"`: Defines the interpolation method. If omitted, defaults to "none".
 * `-quality "low|med|big"`: Compression profile. Defaults to balanced `med`.
   * `low`: Focuses on aggressive space saving and reduces VRAM overhead. Small file size.
   * `med`: The ideal sweet spot. Preserves edge sharpness and fidelity without bloating storage.
   * `big`: Maximum visual fidelity and high bitrate, meant for archival. Generates massive files.
 * `-sharpness [0-10]`: FSR sharpness filtering layer. Ranges from `0` (min) to `10` (max).
 * `-v`: Verbose mode. Prints detailed processing logs directly to the console.
+* `-shutdown`: Shuts down the computer after the process finishes..
 
 > 🔒 **Safety Rule:** You must specify at least one action parameter: either `-scale` or `-fps` for the script to execute.
 
@@ -101,11 +107,11 @@ This is the main modular script used for upscaling and frame interpolation. You 
 ```
 * **Frame Generation Only (30fps to 60fps):**
 ```powershell
-.\process.ps1 -file "C:\path\video.mp4" -fps 60
+.\process.ps1 -file "C:\path\video.mp4" -fps 60 -interpolate=linear
 ```
 * **Full Processing Pipeline (1080p Upscale + 60 FPS + Detailed Logs):**
 ```powershell
-.\process.ps1 -file "C:\path\video.mp4" -scale "1920x1080" -fps 60 -v
+.\process.ps1 -file "C:\path\video.mp4" -scale "1920x1080" -fps 60 -interpolate="mitchell_clamp" -v 
 ```
 
 ##### Output File Naming Convention
@@ -139,15 +145,18 @@ An optional utility script designed to extract video frames into separate image 
 
 > 📝 **Important Note:** FSR technology is fine-tuned for digital graphics. This pipeline is strictly optimized for **video game gameplays** (polygon edges, texture rendering). Applying it to real-life camera recordings or movies will break the processing logic and yield poor results.
 
+## 📌 Updates & Version History
+See the [CHANGELOG.md](docs/CHANGELOG.md) file for full details on recent bug fixes and performance improvements.
+
 ---
 
 ## 📝 Credits & Licensing
 
 * **Core Component (FFmpeg):** Build N-125258-gdf94900c98-20260624. Licensed under *GNU LGPL v2.1+* or *GNU GPL v2.0+*.
-* **Rendering Engine (libplacebo):** Compiled natively inside the core binary. Licensed under *GNU LGPL v2.1+*.
-* **Spatial Scaling (AMD FidelityFX FSR v1.0.2):** Developed by Advanced Micro Devices, Inc. Distributed under the *MIT License*.
-* **Frame Generator Shader (IFS v0.1):** Developed by Aless (MaulSmoke). Distributed under the *MIT License*.
+* **Rendering Engine and Interpolate (libplacebo):** Compiled natively inside the core binary. Licensed under *GNU LGPL v2.1+*.
+* **Spatial Scaling (AMD FidelityFX FSR v1.0.2):** Developed by AMD Inc. Distributed under the *MIT License* port glsl by agyild.
 
 ### Support & Community
-* **Pipeline Integration, Concept & IFS Shader:** Aless (MaulSmoke).
+* **Pipeline Integration, Concept:** Aless (MaulSmoke).
 * **Official YouTube Channel:** Watch tutorials, benchmarks, performance showcases, and interact with the community: [YouTube (@toplayaless)](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk).
+* **Official Reddit Community:** Share your experience, ask questions, and engage with other users: [Reddit (r/FSRIFS)](https://www.reddit.com/r/FSRIFS/).

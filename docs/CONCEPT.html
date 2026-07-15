@@ -129,63 +129,67 @@
 <body>
 
 <div class="container">
-    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
+    <h1>FSRIFS (FSR + IFS) Upscale + Frame Interpolator</h1>
     <div class="subtitle">PROJECT DESCRIPTION</div>
-
-    <h2>1. The Project Root (The Need)</h2>
-    <p>Running a demanding game while simultaneously recording in high resolution is a task that requires an extremely robust PC. Even then, these powerful systems struggle to handle this double processing workload in real time. Therefore, the workflow between playing and recording is segmented. First, the game is recorded at a modest resolution so the player can use Ultra graphical settings, including Ray Tracing. After recording, the final video file is submitted to the upscaling process (sharp resolution increase) and sometimes to frame generation.</p>
-    <p>This way, heavy games originally captured at 30 or 48 FPS receive new artificially created frames, achieving excellent smoothness. However, most market solutions that perform this task depend heavily on intensive AI processing, requiring cutting-edge CPUs and GPUs with dedicated AI cores, as well as massive VRAM resources — requirements completely beyond what low-end graphics cards can supply.</p>
-
+    
+    <h2>1. The Root of the Project (The Need)</h2>
+    <p>Running a demanding game while simultaneously recording gameplay in high resolution is a task that requires an extremely robust computer. Even so, these powerful systems struggle to handle this dual real-time processing workload.</p>
+    <p>The ideal solution for this scenario is to segment the workflow: first, the game is recorded at a lower, more manageable resolution (allowing the player to use Ultra graphical settings, including Ray Tracing). Subsequently, the final video file is subjected to an upscaling process (sharp resolution enhancement) and, if necessary, the generation of new frames (frame interpolation).</p>
+    <p>This way, heavy games originally captured at 30 or 48 FPS receive new, artificially created frames, achieving excellent smoothness. However, market solutions that accomplish this rely on heavy Artificial Intelligence processing, demanding latest-generation CPUs and GPUs with dedicated cores, in addition to a massive consumption of VRAM—resources that are completely out of reach for low-end graphics cards.</p>
+    
     <div class="highlight-box">
         <strong>Do you have a low-end PC?</strong><br>
-        My development environment features an <strong>AMD FX-6300</strong> processor and a <strong>4GB Radeon RX 550</strong> GPU. On setups at this tier, it is impossible to run the most popular AI-based upscaling and frame generation solutions on the market. This is exactly where this project becomes necessary: often, the machine's physical limits only allow recording gameplays in 720p at 30fps with good quality, a standard considered very low for current video publishing platforms.
+        Our development and testing environment features an <strong>AMD FX-6300</strong> processor and a <strong>Radeon RX 550 4GB</strong> GPU. Under these hardware tiers, it becomes impossible to run the most popular AI-based upscale software on the market. This is precisely where this project becomes necessary: often, the machine's physical limits only allow recording gameplay at 720p 30fps with quality, a standard considered very low for current publishing platforms.
     </div>
 
     <div class="section-divider"></div>
 
-    <h2>2. The Turning Point: Scaling Resolution and Frames Smoothly</h2>
-    <p>The inspiration for this project arose from practical experience using the <em>Lossless Scaling</em> software in a real-time gaming environment. Observing that a modest PC could successfully run FSR to upscale resolution and use the LSFG frame generator to transform a 720p/30fps gaming experience into a fluid 1080p/60fps gameplay without killing the hardware, a fundamental question emerged:</p>
+    <h2>2. The Turning Point: Boosting Resolution and Frames Lightly</h2>
+    <p>The inspiration for the birth of this project came from practical experience using the <em>Lossless Scaling</em> software in real-time games. Observing that a modest computer could apply FSR to upscale resolution and use the LSFG frame generator to transform a 720p/30fps gaming experience into smooth 1080p/60fps gameplay without compromising hardware integrity, a fundamental question arose:</p>
     <p style="font-style: italic; text-align: center; color: #495057; margin: 20px 0;">
-        "If this mathematical principle works so efficiently and smoothly in a real-time game, why can't it be applied to a previously recorded 720p/30fps video file to expand it to 1080p/60fps or more?"
+        "If this mathematical principle works so lightly and efficiently in a game running in real time, why not apply it to a previously recorded 720p/30fps video file to expand it to 1080p/60fps or more?"
     </p>
 
     <div class="section-divider"></div>
-
-    <h2>3. A Truly Lightweight Upscale and Frame Generator is Born</h2>
-    <p>To materialize the concept of a lightweight video post-processing pipeline focused on legacy hardware, the power of established open-source tools was combined with custom mathematical logic running directly on the GPU. The ecosystem stands on four fundamental pillars:</p>
+    <h2>3. A Truly Lightweight Upscale and Frame Generator Is Born</h2>
+    <p>To materialize the concept of a lightweight video post-processing pipeline focused on legacy hardware, the power of established open-source tools was combined with mathematical logic executed directly on the GPU. The ecosystem is built upon four fundamental pillars:</p>
     
     <p style="text-align: center; font-weight: bold; margin: 15px 0;">
-        <code>ffmpeg</code> + <code>Vulkan</code> + <code>AMD FidelityFX FSR 1.0</code> + <code>IFS (Intersection Fluid Sharpen)</code>
+        <code>FFmpeg</code> + <code>Vulkan</code> + <code>FSR (FidelityFX Super Resolution)</code> + <code>IFS (Interpolated Frame Sampling)</code>
     </p>
-
-    <p>Although they comprise four distinct technology layers, they all function fused under the same automated process that you easily trigger via commands in your PowerShell:</p>
-
+    
+    <p>Although they comprise four distinct technological layers, they all function fused under the same automated process that you can easily trigger by dragging and dropping files or folders, or via commands in your PowerShell:</p>
+    
     <ul>
-        <li><strong>FFmpeg:</strong> The core engine responsible for handling, reading, and finally encoding the video streams.</li>
-        <li><strong>Vulkan:</strong> The low-level graphics API used as a mandatory dependency. If your graphics card natively supports this technology, hardware acceleration is guaranteed.</li>
-        <li><strong>AMD FidelityFX FSR:</strong> A shader focused on spatial upscaling executed directly on your GPU, increasing resolution with edge preservation without relying on any AI infrastructure.</li>
-        <li><strong>IFS (Intersection Fluid Sharpen):</strong> A custom shader of my own authorship designed specifically to generate intermediate frames without using AI. It works extremely fast while consuming minimal GPU processing. The inspiration for the shader comes from object intersection processes common in vector graphics software.</li>
+        <li><strong>FFmpeg:</strong> The main engine responsible for handling, reading, and final encoding of video streams.</li>
+        <li><strong>Vulkan:</strong> The low-level graphics API accessible via libplacebo. Vulkan is a mandatory dependency; your graphics card must have native support for it.</li>
+        <li><strong>AMD FidelityFX FSR:</strong> A spatial upscaling shader executed directly on the GPU, expanding resolution while preserving edges without relying on any AI framework.</li>
+        <li><strong>IFS (Interpolated Frame Sampling):</strong> Interpolation filters applied directly via shader by libplacebo, generating frames quickly even on slow computers.</li>
     </ul>
+    
+    <p>The entire integration of this pipeline is done 100% natively via script, completely eliminating the need to install heavy development engines or environments such as Node.js, Python, or complex virtual environments. There is no need to run installation programs or deal with complex environment configurations; the project runs fully autonomously, portably, and ready for direct use on your system.</p>
 
     <div class="section-divider"></div>
 
     <h2>3.1. Hardware Requirements & Dependencies</h2>
-    <p>To guarantee stability and proper functionality of the entire post-processing pipeline, your machine must meet the following minimum hardware requirements:</p>
+    <p>To ensure total stability and the proper functioning of the entire post-processing pipeline, your machine must meet the following minimum hardware requirements:</p>
+    
     <ul>
-        <li><strong>Processor (CPU):</strong> Any basic or older 4 or 6-core processor (such as the legacy AMD FX line or Intel Core processors from past generations). During the development and validation of this pipeline, an <strong>AMD FX-6300 with 8GB RAM</strong> (an architecture originally released in 2012) was used.</li>
-        <li><strong>Graphics Card (GPU):</strong> It is mandatory for your card to have native support for the Vulkan API. The ecosystem runs perfectly on both dedicated GPUs (AMD RX, Nvidia GTX/RTX) and recent integrated graphics solutions (AMD Vega or newer Intel HD Graphics). In our test lab, we used an entry-level <strong>AMD Radeon RX 550 with 4GB VRAM</strong> (released in 2017).</li>
+        <li><strong>Processor (CPU):</strong> Any basic or older 4 or 6-core model (such as the AMD FX line or past generations of Intel Core processors). During the development and validation of this pipeline, an <strong>AMD FX-6300 processor with 8GB of RAM</strong> (an architecture originally launched in 2012) was used.</li>
+        <li><strong>Graphics Card (GPU):</strong> It is mandatory that your card features native support for the Vulkan API. The ecosystem runs perfectly on both dedicated GPUs (AMD RX, Nvidia GTX/RTX) and modern integrated video solutions (AMD Vega or Intel HD Graphics). In the test laboratory of this project, we used an entry-level <strong>AMD Radeon RX 550 4GB VRAM card</strong> (launched in 2017).</li>
     </ul>
-    <p>Even when operating under these severe physical limitations and utilizing legacy test hardware, the ecosystem demonstrated excellent software efficiency. The pipeline was capable of delivering rendering speeds up to 2.0x (half the video duration time) for output files configured at 1080p/60fps, alongside total stability during heavy 4K rendering processes.</p>
+    
+    <p>Even operating under severe physical limitations and utilizing older test hardware, the pipeline demonstrated excellent software efficiency. The rendering speed reached up to 2.0x (half the video duration time) for output files configured at 1080p/60fps, while presenting total stability in heavy rendering processes at 4K resolution.</p>
 
     <div class="section-divider"></div>
 
     <h2>4. Conclusion and Efficiency Verdict</h2>
-    <p>This concept serves as practical proof that intelligent software optimization can bypass severe physical limitations of outdated hardware. Replacing heavy artificial neural network calculations with direct, clean, and cheap mathematical instructions for the GPU silicon architecture brings fresh life to legacy computers. It delivers everything that <em>Lossless Scaling</em> offers, adapted for the local video file post-processing scenario.</p>
-
+    <p>This concept serves as practical proof that intelligent software optimization can bypass the severe physical limitations of outdated components. Replacing complex artificial neural network calculations with direct, clean, and cheap mathematical instructions for the GPU silicon architecture brings unprecedented breathing room to old computers. It delivers everything that <em>Lossless Scaling</em> offers, adapted for local video file post-processing workflows:</p>
+    
     <div class="quote-box">
-        "Since the entire upscaling process of this ecosystem is performed via AMD FSR technology, it is highly recommended that your source files consist strictly of video game gameplays. The algorithm was specifically developed to process and polish digital graphics elements, polygon edges, and real-time rendering textures. Attempting to submit real-life recordings — such as movies, series, or videos captured by smartphone cameras — will break the mathematical logic of the process, and you may not achieve the expected result."
+        "Since the entire upscale process of this ecosystem is performed via AMD FSR technology, it is highly recommended that your source files consist strictly of video game gameplays. The algorithm was developed specifically to process and polish digital graphical elements, polygon edges, and textures generated by real-time rendering. Attempting to submit real-life recordings such as movies, TV shows, or videos captured by cell phone cameras will break the process's mathematical logic, and you may not obtain the expected result."
     </div>
-
+    
     <p style="text-align: center; font-weight: bold; font-size: 16px; margin: 25px 0; color: var(--primary-color);">
         If you also own a low-end PC, come be happy with me!
     </p>
@@ -193,19 +197,19 @@
     <div class="section-divider"></div>
 
     <h2>5. Credits and License Attributions</h2>
-    <p>This ecosystem integrates and distributes a fully modular post-processing pipeline composed of established open-source tools combined with a custom logical layer. Below are the individual copyrights and licenses for each component:</p>
+    <p>This ecosystem integrates and distributes a fully modular post-processing pipeline, composed of consolidated open-source software combined with a layer of custom automated logic. Listed below are the individual rights and licenses for each component:</p>
+    
     <ul>
         <li><strong>Core Component (FFmpeg):</strong> Version N-125258-gdf94900c98-20260624. Applicable license: <em>GNU Lesser General Public License (LGPL v2.1 or later)</em> or <em>GNU General Public License (GPL v2.0 or later)</em>.</li>
-        <li><strong>Rendering Library (libplacebo):</strong> Compilation embedded natively within the main FFmpeg binary listed above. Applicable license: <em>GNU Lesser General Public License (LGPL v2.1 or later)</em>.</li>
-        <li><strong>Spatial Scaling Algorithm (FidelityFX FSR):</strong> Version v1.0.2. Developed and registered by Advanced Micro Devices, Inc. (AMD). Applicable license: <em>MIT License (Open-Source and highly permissive)</em>.</li>
-        <li><strong>Frame Generator Algorithm (Intersection Fluid Sharpen - IFS):</strong> Version v0.1. Developed by Aless (MaulSmoke). Applicable license: <em>MIT License (Open-Source and free to use)</em>.</li>
+        <li><strong>Vulkan Rendering & IFS Library (libplacebo):</strong> Embedded natively within the main FFmpeg binary listed above. Applicable license: <em>GNU Lesser General Public License (LGPL v2.1 or later)</em>.</li>
+        <li><strong>Spatial Scaling Algorithm (FidelityFX FSR):</strong> Version v1.0.2. Developed and registered by Advanced Micro Devices, Inc. (AMD). Applicable license: <em>MIT License (highly permissive open-source license)</em>, ported to GLSL by agyild.</li>
+        <li><strong>Pipeline Integration Scripts:</strong> Developed by Aless (MaulSmoke). Applicable license: <em>MIT License (open-source and free to use)</em>.</li>
     </ul>
 
-    <h2>Credits & Technical Support</h2>
+    <h2>Social Channels:</h2>
     <ul>
-        <li><strong>Conceptualization, Custom IFS Shader Authoring (MIT), and Pipeline Integration:</strong> by Aless (MaulSmoke).</li>
-        <li><strong>Third-Party Technologies Used:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
-        <li><strong>Official Project Channel (YouTube):</strong> Watch tutorials, updates, performance showcases, and ask questions directly within the channel community: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">YouTube Channel</a>.</li>
+        <li><strong>Official Project Channel (YouTube):</strong> Watch tutorials, news, performance showcases, and ask questions directly within the channel's community: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">YouTube Channel</a>.</li>
+        <li><strong>Official Project Channel (Reddit):</strong> Comment, share your experience, and ask questions directly within the community: <a href="https://www.reddit.com/r/FSRIFS/" target="_blank">Reddit Community</a>.</li>
     </ul>
 </div>
 

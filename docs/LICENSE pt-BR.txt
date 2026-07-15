@@ -2,7 +2,7 @@
                     CRÉDITOS E ATRIBUIÇÕES DE LICENÇA
 ================================================================================
 
-FSRIFS v1.0.1 by Aless (MaulSmoke)
+FSRIFS v1.1.0 by Aless (MaulSmoke)
 
 Este pacote standalone distribui uma pipeline de pós-processamento modular 
 composta por ferramentas de código aberto integradas a uma lógica autoral. 
@@ -21,12 +21,15 @@ Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
   executável por versões genéricas, pois a pipeline FSRIFS deixará de funcionar.
 
 --------------------------------------------------------------------------------
-2. BIBLIOTECA DE RENDERIZAÇÃO: libplacebo
+2. BIBLIOTECA DE RENDERIZAÇÃO E INTERPOLAÇÃO (IFS): libplacebo
 --------------------------------------------------------------------------------
 * Versão Utilizada: Compilação integrada nativamente no binário FFmpeg core acima.
+* Copyright: Copyright (c) 2016-2026 Niklas Haas and libplacebo contributors
 * Licença Aplicável: GNU Lesser General Public License (LGPL v2.1 ou posterior).
 * Detalhes: Utilizada para fazer a ponte de baixo nível via API Vulkan na GPU 
-  e possibilitar a injeção síncrona de shaders na pipeline de vídeo.
+  e possibilitar a injeção síncrona de shaders. É o motor real responsável por 
+  dar vida ao conceito IFS (Interpolated Frame Sampling) através de seus algoritmos 
+  nativos de amostragem e mesclagem temporal de quadros.
 
 --------------------------------------------------------------------------------
 3. ALGORITMO DE ESCALA ESPACIAL: AMD FidelityFX™ Super Resolution (FSR)
@@ -34,17 +37,18 @@ Abaixo estão detalhados os direitos autorais e as licenças de cada componente:
 * Versão Utilizada: FSR v1.0.2
 * Desenvolvido por: AMD (Advanced Micro Devices, Inc.)
 * Licença Aplicável: Licença MIT (Open-Source, permissiva).
-* Detalhes: Tecnologia integrada no bloco lógico do shader para reconstrução de 
-  bordas físicas e redimensionamento de alta fidelidade sem uso de IA.
+* Detalhes: Tecnologia integrada no bloco lógico do shader (portabilidade GLSL 
+  por agyild) para reconstruction de bordas físicas e redimensionamento de alta 
+  fidelidade sem uso de IA.
 
 --------------------------------------------------------------------------------
-4. ALGORITMO DE CONTROLE TEMPORAL: INTERSECTION FLUID SHARPEN (IFS)
+4. SCRIPTS DE INTEGRAÇÃO DA PIPELINE: FSRIFS
 --------------------------------------------------------------------------------
-* Versão Utilizada: IFS v1.0
+* Versão Utilizada: v1.1.0 (Arquitetura Modular)
 * Desenvolvido por: Aless (MaulSmoke)
-* Licença Aplicável: Licença MIT (Open-Source, permissiva).
-* Detalhes: Shader customizado autoral responsável pela criação da máscara 
-  dinâmica de movimento e blindagem estrutural de elementos estáticos (HUD/Fontes).
+* Licença Aplicável: Licença MIT (Open-Source, livre e permissiva).
+* Detalhes: Lógica autoral de automação responsável por orquestrar toda a pipeline, 
+  modular, execução por DRAG & DROP e extração de frames.
 
 ================================================================================
 Isenção de Responsabilidade: Todas as marcas registradas, logotipos e ferramentas de 

@@ -129,7 +129,7 @@
 <body>
 
 <div class="container">
-    <h1>FSRIFS (FSR + IFS) Upscale + Frame generator</h1>
+    <h1>FSRIFS (FSR + IFS) Upscale + Frame Interpolator</h1>
     <div class="subtitle">DESCRIÇÃO DO PROJETO</div>
 
     <h2>1. A Raiz do Projeto (A Necessidade)</h2>
@@ -153,20 +153,23 @@
     <div class="section-divider"></div>
 
     <h2>3. Nasce um Upscale e Frame Generator Verdadeiramente Leve</h2>
-    <p>Para materializar o conceito de pós-processamento de vídeo leve e focado em hardware legado, uniu-se o poder de ferramentas de código aberto (open-source) consagradas ao desenvolvimento de uma lógica matemática executada diretamente na GPU. O ecossistema se sustenta sobre quatro pilares fundamentais:</p>
+    <p>Para materializar o conceito de pós-processamento de vídeo leve e focado em hardware legado, uniu-se o poder de ferramentas de código aberto (open-source) consagradas a lógicas matemática executadas diretamente na GPU. O ecossistema se sustenta sobre quatro pilares fundamentais:</p>
     
     <p style="text-align: center; font-weight: bold; margin: 15px 0;">
-        <code>ffmpeg</code> + <code>Vulkan</code> + <code>AMD FidelityFX FSR 1.0</code> + <code>IFS (Intersection Fluid Sharpen)</code>
+        <code>FFmpeg</code> + <code>Vulkan</code> + <code>FSR (FidelityFX Super Resolution)</code> + <code>IFS (Interpolate Fluid Sampling)</code>
     </p>
 
-    <p>Embora componham quatro camadas tecnológicas distintas, todas funcionam fundidas sob o mesmo processo automatizado que você dispara facilmente por comandos no seu PowerShell:</p>
+    <p>Embora componham quatro camadas tecnológicas distintas, todas funcionam fundidas sob o mesmo processo automatizado que você dispara facilmente arrastando e soltando arquivos ou pastas ou por comandos no seu PowerShell:</p>
 
     <ul>
         <li><strong>FFmpeg:</strong> O motor principal responsável pela manipulação, leitura e codificação final dos fluxos de vídeo.</li>
-        <li><strong>Vulkan:</strong> A API gráfica de baixo nível utilizada como dependência obrigatória. Se a sua placa de vídeo oferece suporte a ela, a aceleração por hardware está garantida.</li>
+        <li><strong>Vulkan:</strong> A API gráfica de baixo nível acessível via libplacebo. Vulkan é uma dependência obrigatória, sua vCard precisa ter suporte nativo.</li>
         <li><strong>AMD FidelityFX FSR:</strong> Shader focado em upscaling espacial executado diretamente na GPU, ampliando a resolução com preservação de bordas sem depender de nenhuma estrutura de IA.</li>
-        <li><strong>IFS (Intersection Fluid Sharpen):</strong> Um shader de minha autoria desenvolvido especificamente para gerar quadros intermediários sem o uso de IA. Ele trabalha de forma extremamente veloz consumindo o mínimo de recursos gráficos. A inspiração matemática para a sua construção veio dos processos de interseção de objetos comuns em softwares de edição vetorial.</li>
+        <li><strong>IFS (Interpolated Fluid Sampling):</strong> Filtros de interpolação aplicados diretamente por Shader pela libplacebo, gerando frames de forma veloz em computadores lentos.</li>
     </ul>
+
+    <p>Toda a integração dessa pipeline é feita de forma 100% nativa via script, eliminando completamente a necessidade de instalar ecossistemas ou motores de desenvolvimento pesados como Node.js, Python ou ambientes virtuais complexos. Não há necessidade de rodar programas de instalação ou lidar com configurações complexas de ambiente; o projeto funciona de forma totalmente autônoma, portátil e pronta para uso direto no seu sistema</p>
+
     <div class="section-divider"></div>
 
     <h2>3.1. Requisitos e Dependências de Hardware</h2>
@@ -196,16 +199,15 @@
     <p>Este ecossistema integra e distribui uma pipeline de pós-processamento totalmente modular, composta por softwares consolidados de código aberto combinados a uma camada de lógica autoral. Abaixo estão listados os direitos e licenças individuais de cada componente:</p>
     <ul>
         <li><strong>Componente Core (FFmpeg):</strong> Versão N-125258-gdf94900c98-20260624. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em> ou <em>GNU General Public License (GPL v2.0 ou posterior)</em>.</li>
-        <li><strong>Biblioteca de Renderização (libplacebo):</strong> Compilação embarcada nativamente no binário principal do FFmpeg listado acima. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em>.</li>
-        <li><strong>Algoritmo de Escala Espacial (FidelityFX FSR):</strong> Versão v1.0.2. Desenvolvido e registrado por Advanced Micro Devices, Inc. (AMD). Licença aplicável: <em>Licença MIT (Open-Source e amplamente permissiva)</em>.</li>
-        <li><strong>Algoritmo Gerador de Frames (Intersection Fluid Sharpen - IFS):</strong> Versão v0.1. Desenvolvido por Aless (MaulSmoke). Licença aplicável: <em>Licença MIT (Open-Source e de uso livre)</em>.</li>
+        <li><strong>Biblioteca de Renderização Vulkan e IFS (libplacebo):</strong> Compilação embarcada nativamente no binário principal do FFmpeg listado acima. Licença aplicável: <em>GNU Lesser General Public License (LGPL v2.1 ou posterior)</em>.</li>
+        <li><strong>Algoritmo de Escala Espacial (FidelityFX FSR):</strong> Versão v1.0.2. Desenvolvido e registrado por Advanced Micro Devices, Inc. (AMD). Licença aplicável: <em>Licença MIT (Open-Source e amplamente permissiva) portado para glsl por agyild</em>.</li>
+        <li><strong>Scripts de integração da pipeline:</strong> Desenvolvido por Aless (MaulSmoke). Licença aplicável: <em>Licença MIT (Open-Source e de uso livre)</em>.</li>
     </ul>
 
-    <h2>Créditos e Suporte Técnico</h2>
+    <h2>Canais Sociais:</h2>
     <ul>
-        <li><strong>Idealização, Autoria do Shader IFS (MIT) e Integração da Pipeline:</strong> por Aless (MaulSmoke).</li>
-        <li><strong>Tecnologias de Terceiros Utilizadas:</strong> FFmpeg (GPL), libplacebo (LGPL), AMD FidelityFX FSR (MIT).</li>
         <li><strong>Canal Oficial do Projeto (YouTube):</strong> Assista aos tutoriais, novidades, showcase de performance e tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.youtube.com/playlist?list=PLae7RZ7VAOWk" target="_blank">Canal do YouTube</a>.</li>
+		<li><strong>Canal Oficial do Projeto (reddit):</strong> Comente, compartilhe sua experiência, tire suas dúvidas diretamente na comunidade do canal: <a href="https://www.reddit.com/r/FSRIFS/" target="_blank">Comunidade reddit</a>.</li>
     </ul>
 </div>
 
