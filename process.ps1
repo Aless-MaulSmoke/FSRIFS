@@ -63,68 +63,165 @@ function Get-ScriptConfig {
         [System.Collections.IDictionary]$BoundParameters
     )
 
-    $config = [PSCustomObject]@{
-        file        = if ($file) { $file } else { $BoundParameters['file'] }
-        folder      = if ($folder) { $folder } else { $BoundParameters['folder'] }
-        scale       = if ($scale) { [string]$scale } else { [string]$BoundParameters['scale'] } 
-        fps         = if ($fps) { $fps } else { $BoundParameters['fps'] }
-		interpolate = if ($interpolate) { $interpolate.ToLower() } else { "none" }
-        quality     = if ($quality) { $quality.ToUpper() } else { "MED" }
-        sharpness   = if ($sharpness) { $sharpness } else { $BoundParameters['sharpness'] }
-        v           = $v -eq $true -or $BoundParameters['v'] -eq $true
-        shutdown    = $shutdown -eq $true -or $BoundParameters['shutdown'] -eq $true
-        drag_config = $DRAG_CONFIG -eq $true -or $BoundParameters['DRAG_CONFIG'] -eq $true
-		widthOut    = $null
-        heightOut   = $null
-    }
-
-    # Se o switch DRAG_CONFIG for usado, carrega as configurações do arquivo TXT
-    if ($config.drag_config) {
-        $configFile = "$PSScriptRoot\DRAG_CONFIG.txt"
-        if (Test-Path $configFile) {
-            Get-Content $configFile | Where-Object { $_ -match '=' -and $_ -notmatch '^[#;]' } | ForEach-Object {
-                $chave, $valor = $_ -split '=', 2
-                $chave = $chave.Trim().ToUpper()
-                $valor = $valor.Trim()
-
-                switch ($chave) {
-                    "QUALITY"     { $config.quality = $valor.ToUpper() }
-                    "FPS"         { $config.fps = $valor }
-					"INTERPOLATE" { $config.interpolate = $valor.ToLower() }
-					"SCALE"       { $config.scale = [string]$valor }
-                    "SHARPNESS"   { $config.sharpness = [int]$valor }
-                    "VERBOSE"     { if ($valor -eq "true") { $config.v = $true } }
-                    "SHUTDOWN"    { if ($valor -eq "true") { $config.shutdown = $true } }
-                }
-            }
-        } else {
-            Write-Warning "Falha ao abrir o arquivo DRAG_CONFIG.txt."
-            exit
-        }
-    }
-
-    # Validações globais básicas de presença de entrada
-    if ($config.file -and $config.folder) {
-        Write-Warning "Ambiguity Error: Use ONLY '-file' OR '-folder', not both at the same time."
-        exit
-    }
-    if (-not $config.file -and -not $config.folder) {
-        Write-Warning "No input specified. Use '-file' for a single video or '-folder' for batch processing."
-        exit
-    }
-    if ($config.quality.ToUpper() -notin @("LOW", "MED", "BIG")) {
-        Write-Warning "The 'quality' parameter only accepts one of these valid options: LOW | MED | BIG"
-        exit
-    }
-
-	$interpolacoesValidas = @("none", "oversample", "mitchell_clamp", "linear")
-	if ($config.interpolate -notin $interpolacoesValidas) {
-        Write-Warning "The 'interpolate' parameter only accepts one of these valid options: none | oversample | mitchell_clamp | linear"
-        exit
+	# 1. FASE 1: Converte o dicionário de parâmetros cru do console direto em objeto
+	$config = [PSCustomObject]@{}.PSObject.Copy()
+	foreach ($prop in $BoundParameters.GetEnumerator()) {
+		$config | Add-Member -NotePropertyName $prop.Key -NotePropertyValue $prop.Value
 	}
 
-    return $config
 
+	# 2. FASE 2 (DUMP): Busca apenas as chaves necessárias no arquivo, ignorando o manual
+	if ($config.drag_config -and (Test-Path "$PSScriptRoot\DRAG_CONFIG.txt")) {
+		$chavesNecessarias = @("QUALITY", "FPS", "INTERPOLATE", "SCALE", "SHARPNESS", "VERBOSE", "SHUTDOWN")
+		$conteudoTxt = Get-Content "$PSScriptRoot\DRAG_CONFIG.txt"
+
+		foreach ($chave in $chavesNecessarias) {
+			# Busca a linha exata que começa com a chave seguida de "=" no arquivo
+			$linha = $conteudoTxt | Where-Object { $_ -match "^$chave\s*=" }
+			if ($linha) {
+				$propriedade, $valor = $linha.Split('=', 2)
+				$config | Add-Member -NotePropertyName $chave.ToLower() -NotePropertyValue $valor.Trim() -Force
+			}
+		}
+	}
+
+	# 3. FASE 3: TRATAMENTO DE TIPOS, PADRONIZAÇÃO E VALIDAÇÃO FINAL
+	
+	# Catálogo de erros mapeado por IDs
+	$catalogoErros = @{
+		1 = "Ambiguity Error: Use ONLY '-file' OR '-folder', not both at the same time."
+		2 = "No input specified. Use '-file' for a single video or '-folder' for batch processing."
+		3 = "The 'quality' parameter only accepts one of these valid options: LOW | MED | BIG"
+		4 = "The 'fps' parameter must be a valid number greater than 0."
+		5 = "The 'interpolate' parameter only accepts one of these valid options: none | oversample | mitchell_clamp | linear"
+		6 = "The 'scale' parameter should be a resolution, e.g., 1920x1080, or a scaling factor, e.g., 1.5"
+		7 = "The 'sharpness' parameter only accepts numbers between 0 and 10"
+		8 = "The 'verbose' parameter only accepts true or false."
+		9 = "The 'shutdown' parameter only accepts true or false."
+	}
+	$errosEncontrados = @()
+
+	# valida: FILE e FOLDER
+	if ($config.file -and $config.folder) { $errosEncontrados += 1 }
+	if (-not $config.file -and -not $config.folder) { $errosEncontrados += 2 }
+
+	# valida: QUALITY
+	if ($null -ne $config.quality) {
+		$config.quality = [string]$config.quality.ToString().ToUpper()
+		if ($config.quality -notin @("LOW", "MED", "BIG")) { $errosEncontrados += 3 }
+	} else {
+		$config.quality = "MED" # Valor padrão de segurança
+	}
+
+	# valida: FPS
+	if ($null -ne $config.fps -and $config.fps -as [int]) {
+		$config.fps = [int]$config.fps
+		if ($config.fps -le 0) { $errosEncontrados += 4 }
+	} else {
+		# Se veio vazio ou não for número, marcamos erro (ou definimos como 0 se interpolate for "none")
+		if ($null -eq $config.fps) { $config.fps = 0 } else { $errosEncontrados += 4 }
+	}
+
+	# valida: INTERPOLATE
+	if ($null -ne $config.interpolate) {
+		$config.interpolate = [string]$config.interpolate.ToString().ToLower()
+		$interpolacoesValidas = @("none", "oversample", "mitchell_clamp", "linear")
+		if ($config.interpolate -notin $interpolacoesValidas) { $errosEncontrados += 5 }
+	} else {
+		$config.interpolate = "none"
+	}
+
+	# valida: SCALE
+	if ($null -ne $config.scale -and $config.scale -ne "") {
+		$config.scale = [string]$config.scale.ToString().Trim().ToLower()
+
+		# Cenário 1: O usuário informou uma resolução (Ex: 1920x1080)
+		if ($config.scale -match '^\d+x\d+$') {
+			$largura, $altura = $config.scale.Split('x')
+			if (($largura -as [int]) -and ($altura -as [int])) {
+				if ([int]$largura -le 0 -or [int]$altura -le 0) {
+					$errosEncontrados += 6
+				}
+			} else {
+				$errosEncontrados += 6
+			}
+		}
+		# Cenário 2: O usuário informou um multiplicador decimal (Ex: 1.5 ou 2)
+		elseif ($config.scale -as [double]) {
+			$config.scale = [double]$config.scale
+			if ($config.scale -le 0) {
+				$errosEncontrados += 6
+			}
+		}
+		# Cenário 3: Texto inválido que não encaixa em nenhum dos padrões
+		else {
+			$errosEncontrados += 6
+		}
+	} else {
+		$config.scale = $null # Se não informado, permanece nulo para ativar o bypass adiante
+	}
+
+	# valida: SHARPNESS
+	if ($null -ne $config.sharpness -and $config.sharpness -ne "") {
+		if ($config.sharpness -as [int]) {
+			$config.sharpness = [int]$config.sharpness
+			if ($config.sharpness -lt 0 -or $config.sharpness -gt 10) {
+				$errosEncontrados += 7
+			}
+		} else {
+			$errosEncontrados += 7
+		}
+	} else {
+		$config.sharpness = 0 # Se não for informado, define o padrão como 0
+	}
+
+	# valida: VERBOSE
+	$valorFinalVerbose = $false
+	$existeV = $null -ne $config.PSObject.Properties['v']
+	$existeVerbose = $null -ne $config.PSObject.Properties['verbose']
+
+	if ($existeV -and -not $existeVerbose) {
+		$valorFinalVerbose = $true
+		$config.PSObject.Properties.Remove('v')
+	} else {
+		# Garante que o valor vindo do arquivo de texto seja testado estritamente como string
+		$strTesteVerbose = if ($null -ne $config.verbose) { $config.verbose.ToString().ToLower().Trim() } else { "" }
+
+		if ($existeVerbose -and $strTesteVerbose -notin @("true", "false")) {
+			$errosEncontrados += 8
+		} else {
+			$valorFinalVerbose = ($strTesteVerbose -eq "true")
+		}
+		
+		if ($existeV) { $config.PSObject.Properties.Remove('v') }
+	}
+	$config.verbose = $valorFinalVerbose
+
+	# valida: SHUTDOWN
+	$valorFinalShutdown = $false
+	$existeShutdown = $null -ne $config.PSObject.Properties['shutdown']
+	if ($existeShutdown) {
+		$strTesteShutdown = $config.shutdown.ToString().ToLower().Trim()
+		if ($strTesteShutdown -notin @("true", "false")) {
+			$errosEncontrados += 9
+		} else {
+			$valorFinalShutdown = ($strTesteShutdown -eq "true")
+		}
+	} else {
+		$valorFinalShutdown = $false # Padrão se ninguém informou nada no arquivo ou console
+	}
+	$config.shutdown = $valorFinalShutdown
+
+	# LOOP DE VERIFICAÇÃO DE ERROS
+	if ($errosEncontrados.Count -gt 0) {
+		foreach ($id in $errosEncontrados) {
+			Write-Warning $catalogoErros[$id]
+		}
+		exit
+	}
+
+	return $config
+	
 }
 
 # ==========================================================================
@@ -149,35 +246,42 @@ function Initialize-GlobalPipeline {
 		interpolate  = $Config.interpolate
     }
 
-	# Faz a consulta de hardware apenas uma vez (Garante velocidade)
+	# Faz a consulta de hardware
 	$pipeline.gpuName = (Get-CimInstance Win32_VideoController | Select-Object -First 1).Name
 	$gpuVendor = $pipeline.gpuName.ToUpper()
 
 	# Define o codec correto e os perfis de qualidade CRF universais
-	$crfProfiles = @{ "LOW" = 26; "MED" = 22; "BIG" = 18 }
+	$crfProfiles = @{ "LOW" = 24; "MED" = 19; "BIG" = 14 }
 	$qualidadeAlvo = $Config.quality.ToUpper()
-	$pipeline.qp_i = $crfProfiles[$qualidadeAlvo] # Reutilizando a variável qp_i para guardar o CRF
+	$pipeline.qp_i = $crfProfiles[$qualidadeAlvo] # Reutilizando a variável qp_i para guardar o QP/CRF base
 
 	if ($gpuVendor -match "AMD" -or $gpuVendor -match "RADEON") {
-		$Global:SelectedCodec = "hevc_amf"
-		$Global:CodecArgs = @("-rc", "cqp", "-qp_i", $pipeline.qp_i, "-qp_p", ($pipeline.qp_i + 3))
+		$Global:SelectedCodec = "h264_amf"
+		$Global:CodecArgs = @("-rc", "cqp", "-qp_i", $pipeline.qp_i, "-qp_p", ($pipeline.qp_i + 2))
+		#$Global:CodecArgs = @("-rc", "cqp", "-qp_i", $pipeline.qp_i, "-qp_p", ($pipeline.qp_i + 2), "-vbaq", "0")
+
 	} 
 	elseif ($gpuVendor -match "NVIDIA" -or $gpuVendor -match "GEFORCE") {
-		$Global:SelectedCodec = "hevc_nvenc"
+		$Global:SelectedCodec = "h264_nvenc"
 		$Global:CodecArgs = @("-rc", "constqp", "-qp", $pipeline.qp_i)
 	} 
 	elseif ($gpuVendor -match "INTEL") {
-		$Global:SelectedCodec = "hevc_qsv"
+		$Global:SelectedCodec = "h264_qsv"
 		$Global:CodecArgs = @("-global_quality", $pipeline.qp_i)
 	} 
 	else {
-		# Contingência universal via processador (Super Leve)
-		$Global:SelectedCodec = "libx265"
+		# Contingência universal via processador utilizando H.264 (Extremamente Leve)
+		$Global:SelectedCodec = "libx264"
 		$Global:CodecArgs = @("-crf", $pipeline.qp_i, "-preset", "ultrafast")
 	}
 
+
     # Define argumentos verbose
-    if ($Config.v) { $pipeline.verboseArgs = @("-v", "verbose") }
+    if ($Config.verbose) { 
+		$pipeline.verboseArgs = @("-v", "verbose") 
+	} else {
+		$pipeline.verboseArgs = @("-v", "repeat+error", "-stats") 
+	}
 
     # Aplicação GLOBAL da Nitidez (Sharpness) diretamente no arquivo de shader
     if ($Config.scale) {
@@ -223,20 +327,20 @@ function Get-VideoQueue {
     # Definição das extensões de vídeo suportadas pelo seu pipeline original
     $extensoesSuportadas = @(".mp4", ".mkv")
 
-    # CENÁRIO A: Processamento de Arquivo Único
+    # CENÁRIO A: Processamento de arquivo único
     if ($Config.file) {
         # Resolve o caminho absoluto (caso o usuário tenha passado um caminho relativo)
         $caminhoAbsoluto = Resolve-Path -Path $Config.file -ErrorAction SilentlyContinue
 
         if (-not $caminhoAbsoluto -or -not (Test-Path $caminhoAbsoluto.Path)) {
-            Write-Host "[ERRO CLÍTICO] O arquivo especificado não existe ou o caminho é inválido:`n -> $($Config.file)" -ForegroundColor Red
+            Write-Host "[CRITICAL ERROR] The specified file does not exist or the path is invalid:`n -> $($Config.file)" -ForegroundColor Red
             exit
         }
 
         # Extrai a extensão do arquivo para validação
         $extensao = [System.IO.Path]::GetExtension($caminhoAbsoluto.Path).ToLower()
         if ($extensao -notin $extensoesSuportadas) {
-            Write-Host "[ERRO] Extensão '$extensao' não suportada. O script aceita apenas: $($extensoesSuportadas -join ', ')." -ForegroundColor Yellow
+            Write-Host "[ERROR] Extension '$extensao' not supported. The script only accepts: $($extensoesSuportadas -join ', ')." -ForegroundColor Yellow
             exit
         }
 
@@ -244,17 +348,17 @@ function Get-VideoQueue {
         $listaArquivos += $caminhoAbsoluto.Path
     }
     
-    # CENÁRIO B: Processamento em Lote (Pasta)
+    # CENÁRIO B: Processamento em Lote
     elseif ($Config.folder) {
         # Resolve e valida o caminho absoluto da pasta
         $pastaAbsoluta = Resolve-Path -Path $Config.folder -ErrorAction SilentlyContinue
 
         if (-not $pastaAbsoluta -or -not (Test-Path $pastaAbsoluta.Path -PathType Container)) {
-            Write-Host "[ERRO CLÍTICO] A pasta especificada não existe ou não é um diretório válido:`n -> $($Config.folder)" -ForegroundColor Red
+            Write-Host "[CRITICAL ERROR] The specified folder does not exist or is not a valid directory:`n -> $($Config.folder)" -ForegroundColor Red
             exit
         }
 
-        Write-Host "Varrendo a pasta em busca de vídeos válidos..." -ForegroundColor Cyan
+        Write-Host "Sweeping through the folder looking for valid videos..." -ForegroundColor Cyan
         
         # Busca recursiva por arquivos que possuam as extensões permitidas
         $arquivosEncontrados = Get-ChildItem -Path $pastaAbsoluta.Path -File -Recurse | 
@@ -266,14 +370,14 @@ function Get-VideoQueue {
 
         # Se a pasta estiver vazia ou sem vídeos compatíveis, aborta antes de iniciar o loop
         if ($listaArquivos.Count -eq 0) {
-            Write-Host "[AVISO] Nenhum arquivo de vídeo compatível ($($extensoesSuportadas -join ', ')) foi encontrado na pasta especificada." -ForegroundColor Yellow
+            Write-Host "[WARNING] No compatible video files ($($extensoesSuportadas -join ', ')) were found in the specified folder." -ForegroundColor Yellow
             exit
         }
 
-        Write-Host "Fila de processamento criada com sucesso! ($($listaArquivos.Count) arquivo(s) encontrado(s))." -ForegroundColor Green
+        Write-Host "Processing queue created successfully! ($($listaArquivos.Count) file(s) found)." -ForegroundColor Green
     }
 
-    # Retorna o array pronto (seja com 1 elemento ou com vários)
+    # Retorna o array pronto seja com 1 elemento ou com vários
     return $listaArquivos
 }
 
@@ -287,42 +391,58 @@ param (
     [PSCustomObject]$Pipeline
 )
 
-    # 1. Extração de Metadados via FFprobe (Adicionado r_frame_rate e duration)
-    $ffprobeArgs = @(
-        "-v", "error",
-        "-select_streams", "v:0",
-        "-show_entries", "stream=width,height,r_frame_rate:format=duration",
-        "-of", "csv=p=0",
-        $VideoPath
-    )
+    # 1. Extração de Metadados via FFprobe
+	$ffprobeArgs = @(
+		"-v", 
+		"error",
+		"-select_streams", 
+		"v:0",
+		"-show_entries", 
+		"stream=width,height,r_frame_rate,pix_fmt,color_space,color_range:format=duration",
+		"-of", 
+		"csv=p=0",
+		$VideoPath
+	)	
 
-    try {
-        $probeOutput = & $Pipeline.ffprobe $ffprobeArgs 2>$null
-        if ($null -eq $probeOutput -or $probeOutput.Trim() -eq "") {
-            throw "Não foi possível ler as propriedades de vídeo."
-        }
+	try {
+		$probeOutput = & $Pipeline.ffprobe $ffprobeArgs 2>$null
+		if ($null -eq $probeOutput -or $probeOutput.Trim() -eq "") {
+			throw "Could not read the video properties."
+		}
 
-        # Trata o retorno do CSV
-        $metadataParts = $probeOutput.Trim() -split ','
-        $wOriginal   = [int]$metadataParts[0]
-        $hOriginal   = [int]$metadataParts[1]
-        
-        # Trata a fração do FPS
-        $fpsParts    = $metadataParts[2] -split '/'
-        $fpsOriginal = [math]::Round(([double]$fpsParts[0] / [double]$fpsParts[1]), 2)
-        
-        # Extrai a duração em segundos (Sempre a última parte do output devido ao formato do FFprobe)
-        $duracaoSegundos = [double]$metadataParts[-1]
-    }
-    catch {
+		# Substitui quebras de linha por vírgulas e remove espaços, criando uma linha única limpa
+		$textoUnificado = $probeOutput.Trim() -replace "`r", "" -replace "`n", ","
+		
+		# Transforma em um Array Real de elementos separados (Força a tipagem de lista do PowerShell)
+		[string[]]$partesValidas = $textoUnificado -split ','
+
+		# Mapeamento matemático direto pelos índices reais da lista:
+		$wOriginal   = [int]$partesValidas[0]
+		$hOriginal   = [int]$partesValidas[1]
+		$pixFormat   = [string]$partesValidas[2]
+		$colorRange  = [string]$partesValidas[3]
+		$colorSpace  = [string]$partesValidas[4]
+		$fpsRaw      = [string]$partesValidas[5]
+		$duracaoSegundos = [double]$partesValidas[6]
+		$fpsParts    = $fpsRaw -split '/'
+		$fpsOriginal = [math]::Round(([double]$fpsParts[0] / [double]$fpsParts[1]), 2)
+
+		# Normalização estrita para as diretrizes das APIs scale_vulkan e libplacebo
+		if ($colorRange -eq "tv") { $colorRange = "limited" }
+		if ($colorRange -eq "pc") { $colorRange = "full" }
+		
+		if ([string]::IsNullOrEmpty($pixFormat)  -or $pixFormat  -eq "unknown") { $pixFormat  = "nv12" }
+		if ([string]::IsNullOrEmpty($colorSpace) -or $colorSpace -eq "unknown") { $colorSpace = "bt709" }
+
+	} catch {
         return [PSCustomObject]@{
-            Success      = $false
-            SkipVideo    = $true
-            ErrorMessage = "Falha ao extrair metadados via FFprobe. Arquivo corrompido ou incompatível."
-            NomeArquivo  = [System.IO.Path]::GetFileName($VideoPath)
+            Success = $false
+            SkipVideo = $true
+            ErrorMessage = "Failed to extract metadata via FFprobe. File is corrupted or incompatible."
+            NomeArquivo = [System.IO.Path]::GetFileName($VideoPath)
         }
     }
-
+	
     $nomeArquivo = [System.IO.Path]::GetFileName($VideoPath)
     $widthOut    = $wOriginal
     $heightOut   = $hOriginal
@@ -332,7 +452,7 @@ param (
 		# Converte para string para garantir que métodos de texto funcionem se o terminal passar número puro
 		$scaleStr = [string]$Config.scale
 
-		# Regex corrigida: Aceita inteiros ou decimais (com ponto/vírgula) e o 'x' opcional no final
+		# Aceita inteiros ou decimais (com ponto/vírgula) e o 'x' opcional no final
 		if ($scaleStr -match '^(\d+[\.,]?\d*)x?$') {
 			# Limpa o 'x' se houver e padroniza o ponto decimal para o cálculo numérico [1.1]
 			$fatorLimpo    = $Matches[1].Replace(',', '.')
@@ -360,7 +480,7 @@ param (
             Success     = $true
             SkipVideo   = $true
             NomeArquivo = $nomeArquivo
-            Reason      = "Resolução ($wOriginal`x$hOriginal) e FPS ($fpsOriginal) originais já são idênticos aos alvos solicitados."
+            Reason      = "Original resolution ($wOriginal`x$hOriginal) and FPS ($fpsOriginal) are already identical to the requested targets."
         }
     }
 	
@@ -370,6 +490,9 @@ param (
         NomeArquivo     = $nomeArquivo
         wOriginal       = $wOriginal
         hOriginal       = $hOriginal
+		pixFormat       = $pixFormat
+		colorSpace      = $colorSpace
+		colorRange      = $colorRange
         fpsOriginal     = $fpsOriginal
         widthOut        = $widthOut
         heightOut       = $heightOut
@@ -412,7 +535,7 @@ function Invoke-VideoPipeline {
         $diretorioLogAlvo = $Pipeline.logpath
     }
 	
-    # Resgate de Variáveis Locais para bater com a lógica do seu bloco original
+    # Resgate de Variáveis Locais
     $scale         = $Config.scale
     $fps           = $Config.fps
     $quality       = $Config.quality
@@ -422,38 +545,42 @@ function Invoke-VideoPipeline {
     $hOriginal     = $Metadata.hOriginal
     $widthOut      = $Metadata.widthOut
     $heightOut     = $Metadata.heightOut
+    $inPix         = $Metadata.pixFormat
+    $inSpace       = $Metadata.colorSpace
+    $inRange       = $Metadata.colorRange
+	$placeboRange  = if ($inRange -eq "limited" -or $inRange -eq "tv") { "tv" } else { "pc" }
 
-    # Montagem Rígida dos Seus Filtros e Sufixos Originais
-    $vfFilters = @()
-    $sufixo = "_QUALITY_$quality"
+    # Montagem Rígida dos Filtros e Sufixos Originais
+	$vfString = ""
+	$sufixo = "_QUALITY_$quality"
 	
 	# Validações finais
 	if ($Metadata.skipIFS) { $pipeline.interpolate = "none" }
-
-    # STATE 1: Dual Optimized Pipeline (Both parameters active - FSR and IFS)
+	
+	# STATE 1: (ambos FSR e IFS ativos)
     if (-not $Metadata.skipFSR -and -not $Metadata.skipIFS) {
-		$vfFilters += "libplacebo=w=${widthOut}:h=${heightOut}:fps=${fps}:frame_mixer=$($pipeline.interpolate):custom_shader_path='${shaderFFmpeg}'"
-		$sufixo += "_IFS_${fps}fps$($pipeline.interpolate.ToUpper())_FSR_${widthOut}x${heightOut}"
-	}
-    # STATE 2: Spatial Upscale Only (FSR parameter active, IFS inactive)
+        $vfString += "hwupload,libplacebo=w=${widthOut}:h=${heightOut}:fps=${fps}:frame_mixer=$($pipeline.interpolate)"
+        $sufixo += "_IFS_${fps}fps$($pipeline.interpolate.ToUpper())_FSR_${widthOut}x${heightOut}"
+    }
+    # STATE 2: (apenas FSR ativo)
     elseif (-not $Metadata.skipFSR -and $Metadata.skipIFS) {
-        $vfFilters += "libplacebo=w=${widthOut}:h=${heightOut}:custom_shader_path='${shaderFFmpeg}'"
+        $vfString += "hwupload,libplacebo=w=${widthOut}:h=${heightOut}"
         $sufixo += "_FSR_${widthOut}x${heightOut}"
     }
-    # STATE 3: Temporal Frame Generation Only (IFS parameter active, FSR inactive)
+    # STATE 3: (apenas IFS ativo))
     elseif ($Metadata.skipFSR -and -not $Metadata.skipIFS) {
-        $vfFilters += "libplacebo=w=${wOriginal}:h=${hOriginal}:fps=${fps}:frame_mixer=$($pipeline.interpolate):custom_shader_path='${shaderFFmpeg}'"
-		$sufixo += "_IFS_${fps}fps$($pipeline.interpolate.ToUpper())"
+        $vfString += "hwupload,libplacebo=w=${wOriginal}:h=${hOriginal}:fps=${fps}:frame_mixer=$($pipeline.interpolate)"
+        $sufixo += "_IFS_${fps}fps$($pipeline.interpolate.ToUpper())"
     }
+    if ($null -ne $sharpness) { $sufixo += "_SHARPNESS_$sharpness" }
 
-    if ($null -ne $sharpness) {
-        $sufixo += "_SHARPNESS_$sharpness"
-    }
+    # string final do parametro filters para libplacebo
+    $vfString += ":colorspace=${inSpace}:color_primaries=${inSpace}:color_trc=${inSpace}:range=${inRange}:custom_shader_path='${shaderFFmpeg}',hwdownload,format=${inPix}"
 
-    # Converte o array de filtros em uma string separada por vírgulas para o FFmpeg
-    $vfString = $vfFilters -join ','
+#debug    
+#Write-Host "`n[ STRING DE VÍDEO ENVIADA AO FFMPEG ] >>> $vfString <<<`n" -ForegroundColor Yellow
 
-    # Definição do Arquivo de Saída com o seu Sufixo Especial
+    # Definição do Arquivo de Saída Sufixos no nome
     $pastaSaida = [System.IO.Path]::GetDirectoryName($VideoPath)
     $extensaoOriginal = [System.IO.Path]::GetExtension($VideoPath)
     $videoSaida = Join-Path -Path $pastaSaida -ChildPath "${nomeSemExtensao}${sufixo}${extensaoOriginal}"
@@ -489,14 +616,26 @@ function Invoke-VideoPipeline {
 			
     # Cronometragem do laço de processamento
     $cronometro = [System.Diagnostics.Stopwatch]::StartNew()
-
+	
+	# Exibe arquivo corrente
+    $tsDuracao = [TimeSpan]::FromSeconds($Resultado.DuracaoVideo)
+    $timeDuracao = "{0:d2}:{1:d2}:{2:d2}" -f [int]$tsDuracao.TotalHours, $tsDuracao.Minutes, $tsDuracao.Seconds
+	Write-Host "`n[   File: $($Resultado.NomeArquivo)  Length: $($timeDuracao)  Resolution: $($wOriginal)x$($hOriginal)  FPS: $($metadata.fpsOriginal)   ]"  -ForegroundColor Gray
+	
     try {
-        # Executa o FFmpeg
-		& $ffmpeg $verboseArgs -i "$file" `
+		
+	    # Intervalo de cores não pode ser Completo
+		if ($placeboRange -eq "pc") {
+			Throw "Full color format detected! Use Limited format."
+		}
+		
+		# /**/
+		# no modelo atual é necessario sempre enviar o device (por enquanto esta setado device 0 padrão, resolver como escolher vcard por id)
+		& $ffmpeg -init_hw_device vulkan=vk:0 -filter_hw_device vk -ignore_unknown $verboseArgs -i "$file" `
 			-vf "$vfString" `
 			-fps_mode passthrough `
 			-c:v $Global:SelectedCodec @Global:CodecArgs `
-			-tag:v hvc1 `
+			-tag:v avc1 `
 			-c:a copy -y `
 			"$outFile"	
 			
@@ -523,13 +662,13 @@ function Invoke-VideoPipeline {
                 }
             }
         } else {
-            throw "O arquivo final não foi gerado em disco."
+            throw "The final file wasn't generated on disk."
         }
     } catch {
         if ($cronometro.IsRunning) { $cronometro.Stop() }
-        $Resultado.Success      = $false
+        $Resultado.Success        = $false
         $Resultado.TempoDecorrido = $cronometro.Elapsed
-        $Resultado.ErrorMessage = "Erro durante a execução da chamada nativa do FFmpeg."
+		$Resultado.ErrorMessage   = $_.Exception.Message + ". Error during the native FFmpeg call."
 	} finally {
         # Limpa o escopo do ambiente para blindar o próximo arquivo do loop
         Remove-Item Env:\FFREPORT -ErrorAction SilentlyContinue
@@ -552,15 +691,17 @@ function Show-VideoStatus {
 
     # Se o arquivo foi pulado por redundância
     if ($Result.SkipVideo) {
-        Write-Host "[PULADO]  $nomeArquivo -> $($Result.Reason)" -ForegroundColor Yellow
+        Write-Host "`n[SKIPPED] $nomeArquivo" -ForegroundColor Yellow
+        Write-Host "`          $($Result.Reason)" -ForegroundColor Yellow
         $StatusAcumulado.Value.TotalPulados++
         return
     }
 
     # Se o arquivo falhou no FFmpeg ou FFprobe
     if (-not $Result.Success) {
-        Write-Host "[FALHA]   $nomeArquivo -> $($Result.ErrorMessage)" -ForegroundColor Red
-        Write-Host "          Verifique o log em: $($Result.LogPath)" -ForegroundColor DarkGray
+        Write-Host "`n[FAIL]    $nomeArquivo" -ForegroundColor Red
+        Write-Host "          $($Result.ErrorMessage)" -ForegroundColor Red
+        Write-Host "          Check the log file." -ForegroundColor DarkGray
         $StatusAcumulado.Value.TotalFalhas++
         return
     }
@@ -609,9 +750,9 @@ function Show-VideoStatus {
     }
 
     # EXIBIÇÃO EM LINHA ÚNICA (Exatamente como planejado)
-    Write-Host "[SUCESSO] " -NoNewline -ForegroundColor Green
+    Write-Host "[SUCCESS] " -NoNewline -ForegroundColor Green
     Write-Host "$nomeArquivo " -NoNewline -ForegroundColor White
-    Write-Host "| Tempo: $tempoRender | Vel: $speedFactor | Tam: $tamanhoFinalStr | Bitrate: $bitrateStr" -ForegroundColor Gray
+    Write-Host "| Time: $tempoRender | Speed: $speedFactor | Size: $tamanhoFinalStr | Bitrate: $bitrateStr" -ForegroundColor Gray
 
     # Acumula os dados globais para o relatório final
 	$StatusAcumulado.Value.TotalSucesso++
@@ -662,7 +803,7 @@ function Out-GlobalSummary {
         # MODO LOTE: Cabeçalhos com as novas colunas perfeitamente espaçadas
 		Write-Host "`n"
 		Write-Host "====================================================================================" -ForegroundColor Cyan
-        Write-Host " STATUS    | VELOCIDADE | TEMPO    | ARQUIVO" -ForegroundColor Yellow
+        Write-Host " STATUS    | SPEED      | TIME     | FILE " -ForegroundColor Yellow
         Write-Host "------------------------------------------------------------------------------------" -ForegroundColor DarkGray
 
 		if ($Global:SessionHistory) {
@@ -684,17 +825,17 @@ function Out-GlobalSummary {
 				}
 			}
 		} else {
-            Write-Host " Nenhum histórico de lote encontrado no spool." -ForegroundColor Gray
+            Write-Host " No batch history found in the spool." -ForegroundColor Gray
         }
 
 		Write-Host "------------------------------------------------------------------------------------" -ForegroundColor DarkGray
-		Write-Host "  Videos Processados com Sucesso : " -NoNewline; Write-Host "$($StatusAcumulado.TotalSucesso)" -ForegroundColor Green
-		Write-Host "  Videos Ignorados (Redundantes) : " -NoNewline; Write-Host "$($StatusAcumulado.TotalPulados)" -ForegroundColor Yellow
-		Write-Host "  Videos com Falha de Processo   : " -NoNewline; Write-Host "$($StatusAcumulado.TotalFalhas)" -ForegroundColor Red
+		Write-Host "  Videos Processed Successfully  : " -NoNewline; Write-Host "$($StatusAcumulado.TotalSucesso)" -ForegroundColor Green
+		Write-Host "  Ignored Videos (Redundant)     : " -NoNewline; Write-Host "$($StatusAcumulado.TotalPulados)" -ForegroundColor Yellow
+		Write-Host "  Videos with Process Error      : " -NoNewline; Write-Host "$($StatusAcumulado.TotalFalhas)" -ForegroundColor Red
 		Write-Host "------------------------------------------------------------------------------------" -ForegroundColor DarkGray
-		Write-Host "  Duração Total de Vídeo Tratada : $tempoVideoTotal" -ForegroundColor White
-		Write-Host "  Tempo Total de Renderização    : $tempoRenderTotal" -ForegroundColor White
-		Write-Host "  Espaço Total Ocupado em Disco  : $tamanhoTotalMB MB" -ForegroundColor White
+		Write-Host "  Total Video Duration Processed : $tempoVideoTotal" -ForegroundColor White
+		Write-Host "  Total Rendering Time           : $tempoRenderTotal" -ForegroundColor White
+		Write-Host "  Total Disk Space Used          : $tamanhoTotalMB MB" -ForegroundColor White
 		
 	}
 
@@ -715,18 +856,18 @@ function Out-GlobalSummary {
 
     # Lógica de Desligamento Automático
     if ($ShutdownAtivo -and $StatusAcumulado.TotalSucesso -gt 0) {
-        Write-Host "O parâmetro -shutdown está ativo. O sistema será desligado." -ForegroundColor Yellow
-        Write-Host "Pressione ESC para CANCELAR ou ENTER para DESLIGAR IMEDIATAMENTE." -ForegroundColor White
+        Write-Host "The -shutdown parameter is active. The system will shut down." -ForegroundColor Yellow
+        Write-Host "Press [ESC] to CANCEL or [ENTER] to SHUT DOWN IMMEDIATELY." -ForegroundColor White
         
         $segundosRestantes = 30
         while ($segundosRestantes -gt 0) {
-            Write-Host "`rDesligando em $segundosRestantes segundos... " -NoNewline -ForegroundColor Red
+            Write-Host "`rShutting down in $segundosRestantes seconds..." -NoNewline -ForegroundColor Red
             Start-Sleep -Seconds 1
             
             if ($Host.UI.RawUI.KeyAvailable) {
 				$tecla = $Host.UI.RawUI.ReadKey("IncludeKeyDown,NoEcho")
                 if ($tecla.VirtualKeyCode -eq 27) { 
-                    Write-Host "`n[CANCELADO] Desligamento automático interrompido pelo usuário." -ForegroundColor Green
+                    Write-Host "`n[CANCELLED] Automatic shutdown interrupted by the user." -ForegroundColor Green
                     return
                 }
                 if ($tecla.VirtualKeyCode -eq 13) { 
@@ -736,7 +877,7 @@ function Out-GlobalSummary {
             $segundosRestantes--
         }
         
-        Write-Host "`nIniciando desligamento do sistema..." -ForegroundColor Red
+        Write-Host "`nStarting system shutdown..." -ForegroundColor Red
         Stop-Computer -Force
     }
 }
@@ -745,13 +886,13 @@ function Out-GlobalSummary {
 # BLOCO PRINCIPAL DE EXECUÇÃO
 # ==========================================================================
 
-# 1. Captura e unifica as configurações gerais (CLI ou TXT)
+# 1. Captura e unifica as configurações gerais
 $Config = Get-ScriptConfig -BoundParameters $PSBoundParameters
 
-# 2. Inicializa o ambiente global e shaders (Uma única vez)
+# 2. Inicializa o ambiente global e shaders
 $Pipeline = Initialize-GlobalPipeline -Config $Config
 
-# 3. Cria a fila uniforme de processamento (Array de trabalho)
+# 3. Cria a fila uniforme de processamento
 $FilaTrabalho = Get-VideoQueue -Config $Config
 
 # 4. Inicializa o objeto acumulador para as Estatísticas Gerais
@@ -764,10 +905,10 @@ $StatusGeral = [PSCustomObject]@{
     DuracaoTotalVideos   = 0.0
 }
 
-Write-Host "`nIniciando o processamento da fila..." -ForegroundColor Cyan
+Write-Host "`nStarting to process the queue..." -ForegroundColor Cyan
 Write-Host "----------------------------------------------------------------------" -ForegroundColor DarkGray
 
-# 5. O Loop de Processamento (Processa cada arquivo de forma isolada)
+# 5. O Loop de Processamento processando cada arquivo de forma isolada
 foreach ($VideoAtual in $FilaTrabalho) {
     
     # Passo A: Extração de Metadados e Validação de Redundância por Arquivo
