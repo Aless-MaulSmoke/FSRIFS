@@ -851,13 +851,6 @@ function Out-GlobalSummary {
 	Write-Host "====================================================================================" -ForegroundColor Cyan
 	Write-Host "  vCard (GPU): $($Pipeline.gpuName) [Codec: $Global:SelectedCodec] " -ForegroundColor Cyan
 	Write-Host "------------------------------------------------------------------------------------" -ForegroundColor DarkGray
-  _____              .__  _____                ____     ____     ____ 
-_/ ____\_____________|__|/ ____\______  ___  _/_   |   /_   |   /_   |
-\   __\/  ___/\_  __ \  \   __\/  ___/  \  \/ /|   |    |   |    |   |
- |  |  \___ \  |  | \/  ||  |  \___ \    \   / |   |    |   |    |   |
- |__| /____  > |__|  |__||__| /____  >    \_/  |___| /\ |___| /\ |___|
-           \/                      \/                \/       \/      
-
 	Write-Host "                    __          _  __               _   _   _                       " -ForegroundColor Red
 	Write-Host "                   / _|___ _ __(_)/ _|___    __   _/ | / | / |                      " -ForegroundColor Red
 	Write-Host "                  | |_/ __| '__| | |_/ __|   \ \ / / | | | | |                      " -ForegroundColor Red
