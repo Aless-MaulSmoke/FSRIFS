@@ -85,6 +85,7 @@ SHUTDOWN=false
 #  true  - Shows detailed real-time processing information.
 #  false - Keeps the screen clean, showing only essential messages.
 #
+#
 #  SHUTDOWN:
 #  --------------------------------------------------------------------
 #  Triggers a controlled system shutdown once the execution ends.

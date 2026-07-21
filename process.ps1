@@ -1,7 +1,7 @@
 ﻿# ==========================================================================
 # ------------------------------
 #
-#   FSRIFS Core Processing Engine (v1.1.0)
+#   FSRIFS Core Processing Engine (v1.1.1)
 #   Automated pipeline for video upscaling (FSR) and frame interpolation (IFS).
 #
 #   process.ps1 (Powershell script)
@@ -240,6 +240,7 @@ function Initialize-GlobalPipeline {
         shader       = "$PSScriptRoot\shaders\fsr.glsl"
         shaderFFmpeg = ""
 		gpuName      = ""
+		gpuColorFix  = $false
         qp_i         = 0
         qp_p         = 0
         verboseArgs  = @()
@@ -258,8 +259,8 @@ function Initialize-GlobalPipeline {
 	if ($gpuVendor -match "AMD" -or $gpuVendor -match "RADEON") {
 		$Global:SelectedCodec = "h264_amf"
 		$Global:CodecArgs = @("-rc", "cqp", "-qp_i", $pipeline.qp_i, "-qp_p", ($pipeline.qp_i + 2))
-		#$Global:CodecArgs = @("-rc", "cqp", "-qp_i", $pipeline.qp_i, "-qp_p", ($pipeline.qp_i + 2), "-vbaq", "0")
 
+		if ($gpuVendor -match "Vega") { $pipeline.gpuColorFix = $true }
 	} 
 	elseif ($gpuVendor -match "NVIDIA" -or $gpuVendor -match "GEFORCE") {
 		$Global:SelectedCodec = "h264_nvenc"
@@ -433,7 +434,7 @@ param (
 		
 		if ([string]::IsNullOrEmpty($pixFormat)  -or $pixFormat  -eq "unknown") { $pixFormat  = "nv12" }
 		if ([string]::IsNullOrEmpty($colorSpace) -or $colorSpace -eq "unknown") { $colorSpace = "bt709" }
-
+		
 	} catch {
         return [PSCustomObject]@{
             Success = $false
@@ -541,6 +542,7 @@ function Invoke-VideoPipeline {
     $quality       = $Config.quality
     $sharpness     = $Config.sharpness
     $shaderFFmpeg  = $Pipeline.shaderFFmpeg
+	$gpuColorFix   = $pipeline.gpuColorFix
     $wOriginal     = $Metadata.wOriginal
     $hOriginal     = $Metadata.hOriginal
     $widthOut      = $Metadata.widthOut
@@ -549,9 +551,15 @@ function Invoke-VideoPipeline {
     $inSpace       = $Metadata.colorSpace
     $inRange       = $Metadata.colorRange
 	$placeboRange  = if ($inRange -eq "limited" -or $inRange -eq "tv") { "tv" } else { "pc" }
-
+	
     # Montagem Rígida dos Filtros e Sufixos Originais
-	$vfString = ""
+	if ($gpuColorFix) { 
+		$vfString  = "format=gbrp,"
+		$formatFix = "format=gbrp,shuffleplanes=0:1:2:3,"
+	} else {
+		$vfString  = ""
+		$formatFix = ""
+	}
 	$sufixo = "_QUALITY_$quality"
 	
 	# Validações finais
@@ -572,10 +580,10 @@ function Invoke-VideoPipeline {
         $vfString += "hwupload,libplacebo=w=${wOriginal}:h=${hOriginal}:fps=${fps}:frame_mixer=$($pipeline.interpolate)"
         $sufixo += "_IFS_${fps}fps$($pipeline.interpolate.ToUpper())"
     }
-    if ($null -ne $sharpness) { $sufixo += "_SHARPNESS_$sharpness" }
-
     # string final do parametro filters para libplacebo
-    $vfString += ":colorspace=${inSpace}:color_primaries=${inSpace}:color_trc=${inSpace}:range=${inRange}:custom_shader_path='${shaderFFmpeg}',hwdownload,format=${inPix}"
+	$vfString += ":colorspace=${inSpace}:color_primaries=${inSpace}:color_trc=${inSpace}:range=${inRange}:custom_shader_path='${shaderFFmpeg}',hwdownload,${formatFix}format=${inPix}"
+
+    if ($null -ne $sharpness) { $sufixo += "_SHARPNESS_$sharpness" }
 
 #debug    
 #Write-Host "`n[ STRING DE VÍDEO ENVIADA AO FFMPEG ] >>> $vfString <<<`n" -ForegroundColor Yellow
@@ -631,7 +639,8 @@ function Invoke-VideoPipeline {
 		
 		# /**/
 		# no modelo atual é necessario sempre enviar o device (por enquanto esta setado device 0 padrão, resolver como escolher vcard por id)
-		& $ffmpeg -init_hw_device vulkan=vk:0 -filter_hw_device vk -ignore_unknown $verboseArgs -i "$file" `
+		#& $ffmpeg -init_hw_device vulkan=vk:0 -filter_hw_device vk -ignore_unknown $verboseArgs -i "$file" `
+		& $ffmpeg -init_hw_device vulkan=vk:0 -filter_hw_device vk $verboseArgs -i "$file" `
 			-vf "$vfString" `
 			-fps_mode passthrough `
 			-c:v $Global:SelectedCodec @Global:CodecArgs `
@@ -842,11 +851,18 @@ function Out-GlobalSummary {
 	Write-Host "====================================================================================" -ForegroundColor Cyan
 	Write-Host "  vCard (GPU): $($Pipeline.gpuName) [Codec: $Global:SelectedCodec] " -ForegroundColor Cyan
 	Write-Host "------------------------------------------------------------------------------------" -ForegroundColor DarkGray
-	Write-Host "                    __          _  __               _   _   ___                     " -ForegroundColor Red
-	Write-Host "                   / _|___ _ __(_)/ _|___    __   _/ | / | / _ \                    " -ForegroundColor Red
-	Write-Host "                  | |_/ __| '__| | |_/ __|   \ \ / / | | || | | |                   " -ForegroundColor Red
-	Write-Host "                  |  _\__ \ |  | |  _\__ \    \ V /| |_| || |_| |                   " -ForegroundColor Red
-	Write-Host "                  |_| |___/_|  |_|_| |___/     \_/ |_(_)_(_)___/                    " -ForegroundColor White
+  _____              .__  _____                ____     ____     ____ 
+_/ ____\_____________|__|/ ____\______  ___  _/_   |   /_   |   /_   |
+\   __\/  ___/\_  __ \  \   __\/  ___/  \  \/ /|   |    |   |    |   |
+ |  |  \___ \  |  | \/  ||  |  \___ \    \   / |   |    |   |    |   |
+ |__| /____  > |__|  |__||__| /____  >    \_/  |___| /\ |___| /\ |___|
+           \/                      \/                \/       \/      
+
+	Write-Host "                    __          _  __               _   _   _                       " -ForegroundColor Red
+	Write-Host "                   / _|___ _ __(_)/ _|___    __   _/ | / | / |                      " -ForegroundColor Red
+	Write-Host "                  | |_/ __| '__| | |_/ __|   \ \ / / | | | | |                      " -ForegroundColor Red
+	Write-Host "                  |  _\__ \ |  | |  _\__ \    \ V /| |_| | | |                      " -ForegroundColor Red
+	Write-Host "                  |_| |___/_|  |_|_| |___/     \_/ |_(_)_(_)_|                      " -ForegroundColor White
 	Write-Host "                                                                                    " -ForegroundColor White
 	Write-Host "            Author: Aless (MaulSmoke) | Community: YouTube (@toplayaless)           " -ForegroundColor Gray
 	Write-Host "                                                                                    " -ForegroundColor Gray

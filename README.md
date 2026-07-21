@@ -1,4 +1,4 @@
-# 📖 FSRIFS v1.1.0 Documentation: Concept & Practical Guide
+# 📖 FSRIFS v1.1.1 Documentation: Concept & Practical Guide
 
 Welcome to the official documentation for **FSRIFS** (FidelityFX Super Resolution + Interpolate Fluid Sampling), a lightweight video post-processing pipeline designed specifically for low-end and legacy hardware.
 
