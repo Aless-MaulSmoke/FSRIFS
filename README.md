@@ -14,6 +14,6 @@
 
 ---
 ### 🔗 Quick Links / Links Rápidos:
-* **Youtube Channel:** [:youtube.com](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk)
-* **Buy Me a Coffee:** [:buymeacoffee.com](https://buymeacoffee.com/commandup)
-* **Reddit Community:** [:reddit.com](https://www.reddit.com/r/CommandUP/)
+* **Youtube Channel:** [youtube.com](https://www.youtube.com/playlist?list=PLae7RZ7VAOWk)
+* **Buy Me a Coffee:** [buymeacoffee.com](https://buymeacoffee.com/commandup)
+* **Reddit Community:** [reddit.com](https://www.reddit.com/r/CommandUP/)
